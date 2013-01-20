@@ -1,0 +1,8 @@
+.gitignore
+ Assembly-CSharp-vs.csproj
+ Assembly-CSharp.csproj
+ Assembly-CSharp.pidb
+ Library/
+ TestProject-csharp.sln
+ TestProject.sln
+ TestProject.userprefs
