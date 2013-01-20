@@ -36,10 +36,10 @@ public class Roomcomponent_editor : Editor
 				{
 				Destroy(tile.gameObject);
 				interperter.tiles.Remove(tile.gameObject);
-				interperter.wallmasterlist = interperter.wallmasterlist.Except((target as  Roomcomponent).wallstobuild).ToList();
 				}
-			
-			
+				
+			interperter.wallmasterlist = interperter.wallmasterlist.Except((target as  Roomcomponent).wallstobuild).ToList();
+			(target as  Roomcomponent).wallstobuild.Clear();
 			interperter.parseroom2((target as Roomcomponent).room,interperter.heighttable,(target as Roomcomponent).modelarray,(target as Roomcomponent).gameObject);
 			
 			
