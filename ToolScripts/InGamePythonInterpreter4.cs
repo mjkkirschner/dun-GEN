@@ -218,7 +218,7 @@ import UnityEngine
 							if (wallmasterlist.Contains(new Vector3(posx,k,posy))){
 							Debug.Log(new Vector3(posx,k,posy));
 							Debug.Log("already in wallmasterlist");
-							break;
+							continue;
 								}
 							wallmasterlist.Add(new Vector3(posx,k,posy));
 							GameObject currentgo = Instantiate(modelarray[UnityEngine.Random.Range(0,modelarray.Count)],new Vector3(posx,k,posy),Quaternion.identity) as GameObject;

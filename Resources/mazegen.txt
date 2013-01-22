@@ -1,0 +1,299 @@
+from System import Array
+import sys
+sys.path.append('/Users/Mike/pythonintegrationtest/Assets/PythonInterpreter/Plugins/Lib')
+import random
+from collections import deque
+import math
+import time
+from euclid import *
+
+
+
+##******* THINK ABOUT THINGS WE SHOULD ADD TO THE ROOM OBJECTS HERE, THEN WE CAN BUILD A PARSER ON THE UNITY SIDE,
+## THE PYTHON CAN PASS MORE OBJECTS OR ARRAYS BACK THAT CORRESPOND TO ITEMS BEING PLACED, SPAWN POINTS, END POINTS,.... ETC...
+## BRAINSTORM THIS WITH SAIM ASAP.
+
+
+class Room(object):
+	def __init__(self,xpos,ypos,width,height,zheight=1):
+		self.xpos = xpos
+		self.ypos = ypos
+		self.walls = []
+		self.floortiles = []
+		self.width =width
+		self.height = height
+		self.center = Vector2((self.xpos-.5)+.5*self.width,(self.ypos-.5)+.5*self.height)
+		self.neighbors = []
+		self.zheight = zheight
+	  #we go through all position from the lower left
+		#corner to the upper right corner adding
+		#vectors for each position included as a floor tile
+		# STILL TO BE DECIDED WHAT SPACE THIS SHOULD BE IN** 
+		#Thoughts are that these should reference easily into the quadtable
+		for i in range(self.xpos,self.xpos+self.width,1):
+			for j in range(self.ypos,self.ypos+self.height,1):
+				self.floortiles.append(Vector2(i,j))
+		
+		# find the  walls (THESE OFFSETS OF 1 SHOULD = ONE CELL)
+		for i in range(self.xpos-1,self.xpos+self.width+1,1):
+			 #if i is not the first or last item
+			if i != self.xpos-1 and i != self.xpos+self.width:
+				#this is the top and bottom wall 
+				self.walls.append(Vector2(i,self.ypos-1))
+				self.walls.append(Vector2(i,self.ypos+self.height))
+			else: # if i is the first or last
+				for j in range(self.ypos-1,self.ypos+self.height+1):
+					#if j != self.ypos-1 and j != self.ypos+self.height:
+						self.walls.append(Vector2(i,j))
+	def addneighbor(self,neighbor):
+		self.neighbors.append(neighbor)	
+	def setzheight(self,zheight):
+		self.zheight = zheight				
+		
+
+
+class TerrainBlock(object):
+	def __init__(self, width, height, xpos, ypos, color):
+		self.xpos = xpos
+		self.ypos = ypos
+		self.color = color
+		self.width = width
+		self.height = height
+		x = width/2.0
+		y = height/2.0
+		
+	
+
+class WallBlock(TerrainBlock):
+	def __init__(self, width, height, xpos, ypos, color):
+		self.xpos = xpos
+		self.ypos = ypos
+		self.color = (0,0,0)
+		self.width = width
+		self.height = height
+		x = width/2.0
+		y = height/2.0
+		
+
+class FloorBlock(TerrainBlock):
+	def __init__(self, width, height, xpos, ypos, color):
+		self.xpos = xpos
+		self.ypos = ypos
+		self.color = (.7,.5,.5)
+		self.width = width
+		self.height = height
+		x = width/2.0
+		y = height/2.0
+		
+	
+	
+
+
+
+
+# iterations = iterations
+# # xsd
+# # ysd
+# # xcenter
+# # ycenter
+
+
+
+rooms = []
+
+# generate our datastructure to actually hold the blocks
+quadtable = [[0 for i in range(200)] for j in range(200)]
+#iterate x positions by 20
+for i in range(0,800,20):
+	#generate y positions ranging to 800 by 20
+	for j in range(0,800,20):
+		#create a new terrain block at the positions in pixel coords so not scaled down by 20
+		currentsquare = TerrainBlock(19,19,i,j,(.7,.5,.2))
+		#add to the quad table at scaled down by 20 positions
+		quadtable[i/20][j/20] = currentsquare
+
+
+quadtableheights = [[0 for i in range(200)] for j in range(200)]
+#iterate x positions by 20
+for i in range(0,800,20):
+	#generate y positions ranging to 800 by 20
+	for j in range(0,800,20):
+		#create a new terrain block at the positions in pixel coords so not scaled down by 20
+		currentsquare = 1
+		#add to the quad table at scaled down by 20 positions
+		quadtableheights[i/20][j/20] = currentsquare
+
+
+
+
+
+newroom = Room(20,20,6,2)
+rooms.append(newroom)
+for i in newroom.walls:
+	quadtable[i.x][i.y] = WallBlock(19,19,i.x*20,i.y*20,(0,0,0))
+	quadtableheights[i.x][i.y] = newroom.zheight
+for i in newroom.floortiles:
+  quadtable[i.x][i.y] = FloorBlock(19,19,i.x*20,i.y*20,(0,0,0))
+  quadtableheights[i.x][i.y] = newroom.zheight
+
+
+
+
+
+  
+
+
+
+for i in range(iterations):
+	 	roomtotest = Vector2(int(math.fabs(random.gauss(xcenter,xsd)))+1,int(math.fabs(random.gauss(ycenter,ysd)))+1)
+
+
+	### WRAP THIS UP to determine the direction to scan for space for the new room
+	#for i in range(10):
+		print "restarting function"
+		currentroom = random.choice(rooms)
+		wallindex = random.randrange(len(currentroom.walls))
+		walltotest = currentroom.walls[wallindex]
+
+
+
+		##neighbor logic for the selected walls, check 4 neighbors of selected wall
+
+		top = False
+		bottom = False
+		right = False
+		left = False
+
+
+		print top,bottom,right,left
+
+		if type(quadtable[walltotest.x][walltotest.y+1]) == TerrainBlock: 
+			top = True
+
+		if type(quadtable[walltotest.x+1][walltotest.y]) == TerrainBlock:
+			right = True
+
+		if type(quadtable[walltotest.x-1][walltotest.y]) == TerrainBlock:
+			left = True
+
+		if type(quadtable[walltotest.x][walltotest.y-1]) == TerrainBlock:
+			bottom = True
+
+		if top is True:
+			if bottom or right or left is True:	
+				print "corner selectd"
+				continue
+		if bottom is True:
+			if top or right or left is True:
+				print "corner selectd"
+				continue
+		if left is True:
+			if bottom or right or top is True:
+				print "corner selectd"
+				continue
+		if right is True:
+			if bottom or top or left is True:
+				print "corner selectd"
+				continue
+		if top is False and bottom is False and left is False and right is False:
+			continue
+
+		print top,bottom,right,left	
+				
+		scandir = walltotest - currentroom.center
+		print walltotest
+
+
+		#all this ugliness is because of how I am iterating from start to end and the inclusion rules of python range function
+		if top == True:
+			scanend =  walltotest + (Vector2(int(math.floor(roomtotest.x/2)+1),1*roomtotest.y+2))
+			scanstart = Vector2(walltotest.x - int(math.floor(roomtotest.x/2)),walltotest.y+1)
+			doorcheck = Vector2(0,-1)
+			print "top"
+
+		elif bottom == True:
+			scanend = Vector2(walltotest.x + int(math.floor(roomtotest.x/2)+1),walltotest.y)
+			scanstart = walltotest + (Vector2(-1*int(math.floor(roomtotest.x/2)),-1*(roomtotest.y)))
+			doorcheck = Vector2(0,1)
+			print "bottom"
+				
+		
+		elif left == True:
+
+			scanstart = walltotest + (Vector2(-1*roomtotest.x,-1*int(math.floor(roomtotest.y/2))))
+			scanend = Vector2(walltotest.x,walltotest.y + int(math.floor(roomtotest.y/2))+1)
+			doorcheck = Vector2(1,0)
+			print "left"
+			
+		
+		elif right == True:
+			scanend= (walltotest + (Vector2(1*(roomtotest.x+2),1*int(math.floor(roomtotest.y/2))+1)))
+			scanstart = Vector2(walltotest.x + 1,walltotest.y -1*int(math.floor(roomtotest.y/2)))
+			doorcheck = Vector2(-1,0)
+			print "right"
+			
+			
+
+		
+
+		die = False
+
+		for i in range(scanstart.x,scanend.x):
+			if die != True:
+				for j in range(scanstart.y,scanend.y):
+					o = quadtable[i][j]
+					if type(o) == TerrainBlock:
+						print "earth"
+					else:
+						print "something is here"
+						die = True	
+		if die == False:
+			newroom3 = Room(scanstart.x,scanstart.y,roomtotest.x,roomtotest.y)
+			
+			currentroom.addneighbor(newroom3)
+			newroom3.addneighbor(currentroom)
+
+
+			
+
+
+			## calculate the zheight of the room before we add the heights to the table
+
+			newroom3.setzheight(currentroom.zheight + random.randint(0,2))
+
+
+
+			rooms.append(newroom3)
+
+			for i in newroom3.walls:
+			  quadtable[i.x][i.y] = WallBlock(19,19,i.x*20,i.y*20,(0,0,0))
+			  quadtableheights[i.x][i.y] = newroom3.zheight
+
+			for i in newroom3.floortiles:
+			  quadtable[i.x][i.y] = FloorBlock(19,19,i.x*20,i.y*20,(0,0,0))
+			  quadtableheights[i.x][i.y] = newroom3.zheight
+
+			quadtable[walltotest.x][walltotest.y] = FloorBlock(19,19,walltotest.x*20,walltotest.y*20,(0,0,0))    
+			quadtable[walltotest.x + doorcheck.x][walltotest.y+doorcheck.y] = FloorBlock(19,19,(walltotest.x+doorcheck.x)*20,(walltotest.y+doorcheck.y)*20,(0,0,0))
+
+convertarr = Array.CreateInstance(int,200,200)
+for a in range(0,200):
+	for b in range(0,200):
+		    if type(quadtable[a][b]) == TerrainBlock:
+				convertarr[a,b] = 1
+		    elif type(quadtable[a][b]) == FloorBlock:
+				convertarr[a,b] = 2
+		    elif type(quadtable[a][b]) == WallBlock:
+				convertarr[a,b] = 3
+		    else:
+				convertarr[a,b] = 0		
+
+## do the second conversion for the heights table!
+
+		
+convertarrheights = Array.CreateInstance(int,200,200)
+for a in range(0,200):
+	for b in range(0,200):
+		    convertarrheights[a,b] = quadtableheights[a][b] 
+		    	
+# ###

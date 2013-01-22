@@ -1,0 +1,21 @@
+import random
+import math
+
+# definte some different states depending on area,ratio,and height, and then generate based on those, each state 
+# can use a different random distribution?
+
+area = 100
+ratio = 1
+
+
+
+sizeshape = (area/1600.0) * ratio*50
+
+
+print sizeshape
+
+for i in range(100):
+	x =  int(random.gauss(0,sizeshape))
+	x = max(min(x, 3), 0)
+	print x
+

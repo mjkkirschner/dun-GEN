@@ -1,0 +1,3 @@
+name = 'chris'
+age = newage
+print age
