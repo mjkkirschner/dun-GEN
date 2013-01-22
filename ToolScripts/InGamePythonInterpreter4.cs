@@ -34,7 +34,7 @@ public class InGamePythonInterpreter4 : MonoBehaviour
 	public GameObject model4;
 	
 	public List<GameObject> modelarray = new List<GameObject>();
-	
+	public List<GameObject> modelpreviewlist = new List<GameObject>();
 	
 	private List<roomsimple> crooms = new List<roomsimple>();
 	public List<Vector3> wallmasterlist = new List<Vector3>();
@@ -153,8 +153,34 @@ import UnityEngine
 		}
 }
 	
+	
+	public int wallcheck(float posx,float posy,roomsimple room){
+		if (posx == room.xpos-1){
+		Debug.Log ("left");
+		return 0; 	
+		
+		}
+		if (posx == room.width+room.xpos){
+			Debug.Log ("right");
+			return 1;
+		}
+		if (posy == room.height+room.ypos){
+			Debug.Log ("top");
+			return 2;
+		}
+		if (posy == room.ypos-1){
+			Debug.Log ("bottom");
+			return 3;
+		}
+		
+		return 4;
+		Debug.Log("something has gone wrong");
+		
+		
+	}
+	
 	public bool edgecheck(float posx,float posy,roomsimple room){
-		if ((posx == room.xpos) || (posy== room.ypos)){
+		if ((posx == room.xpos-1) || (posy== room.ypos-1)){
 		//Debug.Log ("edge");
 		return true; 	
 		
@@ -170,17 +196,18 @@ import UnityEngine
 	public void parseroom2(roomsimple room, int[,] heighttable, List<GameObject> modelarray, GameObject parent ){
 	
 		
-		
-			
+			//use the parent parameter as the parent of the room, it also holds the RoomComponent later
+						
 			GameObject roomcenter = parent;
+			// add each tile made to the tile list
 			tiles.Add(roomcenter);
 			foreach (Vector2Serializer wall in room.walls){
 					
 					float posx = wall.x;
 					float posy = wall.y;
-						
+					// only look at tiles above 0,0	
 					if ((posx >= 0.0) && (posy >= 0.0)){ 
-						
+					// use the height to create walls of the correct height	
 					int height = heighttable[(int)posx,(int)posy];
 							for (int k = 0; k < height+(wallheight); k++){
 								Vector3 rot = new Vector3(UnityEngine.Random.Range(0.0f,360.0f),UnityEngine.Random.Range(0.0f,360.0f),UnityEngine.Random.Range(0.0f,360.0f));
@@ -189,19 +216,47 @@ import UnityEngine
 								rot.z = Mathf.Round(rot.z / 90) * 90;
 							
 							if (wallmasterlist.Contains(new Vector3(posx,k,posy))){
-							
+							Debug.Log(new Vector3(posx,k,posy));
+							Debug.Log("already in wallmasterlist");
 							break;
 								}
 							wallmasterlist.Add(new Vector3(posx,k,posy));
 							GameObject currentgo = Instantiate(modelarray[UnityEngine.Random.Range(0,modelarray.Count)],new Vector3(posx,k,posy),Quaternion.identity) as GameObject;
 							currentgo.transform.Rotate(rot.x,rot.y,rot.z);
 							tiles.Add(currentgo);
-							currentgo.transform.parent = roomcenter.transform;
 							
+					
+					
+							//here is where we check the x and z and determine what parent this tile belongs to
+								if (wallcheck(posx,posy,room) == 0) {							
+							
+							currentgo.transform.parent = roomcenter.transform.FindChild("leftwall").transform;
+					}
+							else if (wallcheck(posx,posy,room) == 1) {							
+							
+							currentgo.transform.parent = roomcenter.transform.FindChild("rightwall").transform;
+					}
+							
+							else if (wallcheck(posx,posy,room) == 2) {							
+							
+							currentgo.transform.parent = roomcenter.transform.FindChild("topwall").transform;
+					}
+							
+							else if (wallcheck(posx,posy,room) == 3) {							
+							
+							currentgo.transform.parent = roomcenter.transform.FindChild("bottomwall").transform;
+					}
+					
+					
+					
+					
+					
+					
+					
 							//grab the roomcomponent of the current room/parent object, and store the actual walls that we build here.
 							// these are the blocks we WILL clear from the wallmasterlist when we regen the room
 							roomcenter.GetComponent<Roomcomponent>().wallstobuild.Add(currentgo.transform.localPosition);
-						
+							
 						}
 					}
 				}
@@ -217,7 +272,7 @@ import UnityEngine
 							int k = height-2;
 							GameObject currentgo = Instantiate(model4,new Vector3(posx,k,posy),Quaternion.identity) as GameObject;
 							tiles.Add(currentgo);	
-							currentgo.transform.parent = roomcenter.transform;
+							currentgo.transform.parent = roomcenter.transform.FindChild("floor").transform;
 						}
 						
 						else{	
@@ -228,7 +283,7 @@ import UnityEngine
 							for (int k = height-3; k < height-1; k++){
 								GameObject currentgo = Instantiate(model4,new Vector3(posx,k,posy),Quaternion.identity) as GameObject;
 								tiles.Add(currentgo);	
-								currentgo.transform.parent = roomcenter.transform;
+								currentgo.transform.parent = roomcenter.transform.FindChild("floor").transform;
 						
 					}
 			
@@ -239,6 +294,9 @@ import UnityEngine
 			}
 	
 		}
+	//roomcenter.AddComponent<CombineChildren>();
+	//roomcenter.GetComponent<CombineChildren>().Combine();
+	
 	}
 	
 	
@@ -247,8 +305,22 @@ import UnityEngine
 	public void parseroom2(roomsimple room, int[,] heighttable, List<GameObject> modelarray ){
 	
 		
-	
+		//create a new centerobject and the 4 walls and floor subparents
 		GameObject newroomcenter = new GameObject();
+		
+		GameObject leftwall = new GameObject("leftwall");
+		GameObject rightwall = new GameObject("rightwall");
+		GameObject topwall = new GameObject("topwall");
+		GameObject bottomwall = new GameObject("bottomwall");					
+		GameObject floor = new GameObject("floor");
+		
+		leftwall.transform.parent = newroomcenter.transform;
+		rightwall.transform.parent = newroomcenter.transform;
+		bottomwall.transform.parent = newroomcenter.transform;
+		topwall.transform.parent = newroomcenter.transform;
+		floor.transform.parent = newroomcenter.transform;
+		
+		
 		newroomcenter.AddComponent<Roomcomponent>().room = room;
 		parseroom2(room,heighttable,modelarray,newroomcenter);	
 	
