@@ -104,7 +104,7 @@ import UnityEngine
 					float posx = m_pyEnv.m_pythonEngine.Operations.GetMember<float>(vector2,"x");
 					float posy = m_pyEnv.m_pythonEngine.Operations.GetMember<float>(vector2,"y");
 					Vector2 position = new Vector2(posx,posy);
-					Debug.Log(position);
+					//Debug.Log(position);
 					if ((posx >= 0.0) && (posy >= 0.0)){ 
 						
 					int height = heighttable[(int)posx,(int)posy];
@@ -156,25 +156,25 @@ import UnityEngine
 	
 	public int wallcheck(float posx,float posy,roomsimple room){
 		if (posx == room.xpos-1){
-		Debug.Log ("left");
+		//Debug.Log ("left");
 		return 0; 	
 		
 		}
 		if (posx == room.width+room.xpos){
-			Debug.Log ("right");
+			//Debug.Log ("right");
 			return 1;
 		}
 		if (posy == room.height+room.ypos){
-			Debug.Log ("top");
+			//Debug.Log ("top");
 			return 2;
 		}
 		if (posy == room.ypos-1){
-			Debug.Log ("bottom");
+			//Debug.Log ("bottom");
 			return 3;
 		}
 		
 		return 4;
-		Debug.Log("something has gone wrong");
+		//Debug.Log("something has gone wrong");
 		
 		
 	}
@@ -216,8 +216,8 @@ import UnityEngine
 								rot.z = Mathf.Round(rot.z / 90) * 90;
 							
 							if (wallmasterlist.Contains(new Vector3(posx,k,posy))){
-							Debug.Log(new Vector3(posx,k,posy));
-							Debug.Log("already in wallmasterlist");
+							//Debug.Log(new Vector3(posx,k,posy));
+							//Debug.Log("already in wallmasterlist");
 							continue;
 								}
 							wallmasterlist.Add(new Vector3(posx,k,posy));
@@ -294,8 +294,58 @@ import UnityEngine
 			}
 	
 		}
-	//roomcenter.AddComponent<CombineChildren>();
-	//roomcenter.GetComponent<CombineChildren>().Combine();
+//	roomcenter.AddComponent<CombineChildren>();
+//	
+//	roomcenter.transform.FindChild("topwall").gameObject.AddComponent<CombineChildren>();	
+//	roomcenter.transform.FindChild("bottomwall").gameObject.AddComponent<CombineChildren>();
+//	roomcenter.transform.FindChild("leftwall").gameObject.AddComponent<CombineChildren>();
+//	roomcenter.transform.FindChild("rightwall").gameObject.AddComponent<CombineChildren>();
+//	roomcenter.transform.FindChild("floor").gameObject.AddComponent<CombineChildren>();
+//		
+//	roomcenter.GetComponent<CombineChildren>().CallCombineOnAllChilds();
+		
+		
+//lets try building a box of bounding all children here!
+
+		
+//get colliders in each room's topwall		
+
+Collider[] colliders = roomcenter.transform.FindChild("topwall").gameObject.GetComponentsInChildren<Collider>();
+//create a new center vector for each room
+if (colliders.Length > 0)
+		{
+		Vector3 center = new Vector3(0,0,0);
+		//iterate the colliders in all children and calculate their average center		
+		foreach (Collider col in colliders)
+				{
+							
+				center = center + col.gameObject.transform.position;	
+				}		
+				
+				center = center / colliders.Length;
+				
+				
+		//create a new bounds object at that center		
+		Bounds totalBounds = new Bounds(center,new Vector3(0,0,0));		
+		//iterate all the children colliders encapsulate them with the bounds object just created	
+		foreach (Collider col in colliders)
+				{
+					
+				totalBounds.Encapsulate(col.bounds);
+				
+					
+				}		
+		//add a box collider to each top wall object	
+		roomcenter.transform.FindChild("topwall").gameObject.AddComponent<BoxCollider>();		
+		//get that collider we just added		
+		BoxCollider collider =(BoxCollider) roomcenter.transform.FindChild("topwall").gameObject.GetComponent<Collider>();
+		// set the center = to the center of the bounds
+		collider.center = center;
+		// set the size =  to the size of the bounds		
+		collider.size = totalBounds.size;			
+		}	
+// have to center this correctly somehow		
+		
 	
 	}
 	
