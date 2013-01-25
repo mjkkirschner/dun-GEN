@@ -78,10 +78,14 @@ public class Roomcomponent_editor : Editor
 			// for each child of the room parent we destroy the child and remove those destroyed tiles from the tiles list
 			// then clear the entire wallmasterlist...this causes a bug that we create new blocks at the interface where we should not
 			// what to do is this, each room should hold a second list of walls, either just the walls we really want, or a subtraction list
-			foreach (Transform tile in (target as Roomcomponent).transform)
+			foreach (Transform wall in (target as Roomcomponent).transform)
 				{
-				Destroy(tile.gameObject);
-				interperter.tiles.Remove(tile.gameObject);
+					foreach(Transform tile in wall.transform)
+						{
+					// need to search deeper now that we have the wall parents here we are not removing the correct tiles from the list.
+					Destroy(tile.gameObject);
+					interperter.tiles.Remove(tile.gameObject);
+						}	
 				}
 				
 			interperter.wallmasterlist = interperter.wallmasterlist.Except((target as  Roomcomponent).wallstobuild).ToList();

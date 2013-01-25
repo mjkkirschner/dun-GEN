@@ -154,6 +154,7 @@ import UnityEngine
 }
 	
 	
+	
 	public int wallcheck(float posx,float posy,roomsimple room){
 		if (posx == room.xpos-1){
 		//Debug.Log ("left");
@@ -310,6 +311,12 @@ import UnityEngine
 		
 //get colliders in each room's topwall		
 
+if (roomcenter.transform.FindChild("topwall").gameObject.GetComponent<Collider>())
+		{
+	DestroyImmediate(roomcenter.transform.FindChild("topwall").GetComponent<Collider>());
+		Debug.Log("destroy topwall collider");
+		}
+		
 Collider[] colliders = roomcenter.transform.FindChild("topwall").gameObject.GetComponentsInChildren<Collider>();
 //create a new center vector for each room
 if (colliders.Length > 0)
