@@ -297,9 +297,12 @@ def on_key_press(key,modifiers):
 			quadtable[walltotest.x + doorcheck.x][walltotest.y+doorcheck.y] = FloorBlock(19,19,(walltotest.x+doorcheck.x)*20,(walltotest.y+doorcheck.y)*20,(0,0,0))
 
 			
+			doorwidth = random.randrange(1,len(overlapped))
+			## here we remove all the overlapping walls
 
-			for i in overlapped:
-				quadtable[i.x][i.y] = FloorBlock(19,19,i.x*20,i.y*20,(0,0,0))
+			for i in range(doorwidth):
+				wall = overlapped[i]
+				quadtable[wall.x][wall.y] = FloorBlock(19,19,wall.x*20,wall.y*20,(0,0,0))
 # ###
 
 

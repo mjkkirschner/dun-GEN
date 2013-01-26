@@ -275,10 +275,11 @@ for i in range(iterations):
 			for owall in currentroom.walls:
 				if owall in newroom3.walls:
 					overlapped.append(owall)
+					# put all overlapped walls in list
 			print ("OVERLAP")
 			print(overlapped)
 
-			#remove the corners
+			#remove the corners from the list
 			for x in overlapped:
 				if (cornercheck(newroom3,x)):
 					overlapped.remove(x)
@@ -289,7 +290,7 @@ for i in range(iterations):
 
 
 			## calculate the zheight of the room before we add the heights to the table
-
+			## we'll set the range of heights here, through a variable exposed to this enviornment
 			newroom3.setzheight(currentroom.zheight + random.randint(0,2))
 
 
@@ -297,8 +298,16 @@ for i in range(iterations):
 			rooms.append(newroom3)
 
 			for i in newroom3.walls:
-			  quadtable[i.x][i.y] = WallBlock(19,19,i.x*20,i.y*20,(0,0,0))
-			  quadtableheights[i.x][i.y] = newroom3.zheight
+				quadtable[i.x][i.y] = WallBlock(19,19,i.x*20,i.y*20,(0,0,0))
+
+				#attempting bug fix here
+				if (quadtableheights[i.x][i.y] > newroom3.zheight):
+					quadtableheights[i.x][i.y] = quadtableheights[i.x][i.y]
+				else:			
+					quadtableheights[i.x][i.y] = newroom3.zheight
+
+
+			  
 
 			for i in newroom3.floortiles:
 			  quadtable[i.x][i.y] = FloorBlock(19,19,i.x*20,i.y*20,(0,0,0))
@@ -311,14 +320,19 @@ for i in range(iterations):
 
 			lastroom = rooms[-1]
 
-			for i in overlapped:
-				quadtable[i.x][i.y] = FloorBlock(19,19,i.x*20,i.y*20,(0,0,0))
-				if (i in currentroom.walls):
-					currentroom.walls.remove(i)	
-					currentroom.floortiles.append(i)
-				if (i in lastroom.walls):
-					lastroom.walls.remove(i)
-					lastroom.floortiles.append(i)
+			if (len(overlapped) > 1):
+				doorwidth = random.randrange(1,len(overlapped))
+			else: doorwidth = 1		
+
+			for i in range(doorwidth):
+				wall = overlapped[i]
+				#quadtable[wall.x][wall.y] = FloorBlock(19,19,wall.x*20,wall.y*20,(0,0,0))
+				if (wall in currentroom.walls):
+					currentroom.walls.remove(wall)	
+					currentroom.floortiles.append(wall)
+				if (wall in lastroom.walls):
+					lastroom.walls.remove(wall)
+					lastroom.floortiles.append(wall)
 				# we need to do the same thing here as below because we have started using the rooms themselves
 				# we need to alter the wall tiles and switch them to the floor tiles at the overlapped spaces
 
