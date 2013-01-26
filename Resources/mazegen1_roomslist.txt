@@ -85,7 +85,22 @@ class FloorBlock(TerrainBlock):
 		x = width/2.0
 		y = height/2.0
 		
-	
+def cornercheck(room,walltotest):
+		## lets change this to check based on the size of the room.... so take the room objects and walls instead...
+		print ("cornercheck")
+		# bottomleft
+		if (walltotest.x == room.xpos-1) and (walltotest.y == room.ypos-1):
+			return True
+		#topleft	
+		if (walltotest.x == room.xpos-1) and (walltotest.y == room.ypos+room.height):
+			return True
+		#topright
+		if (walltotest.x == room.xpos + room.width) and (walltotest.y == room.ypos + room.height):
+			return True
+		#bottomright
+		if (walltotest.x == room.xpos + room.width) and (walltotest.y == room.ypos-1):
+			return True	
+		return False		
 	
 
 
@@ -254,7 +269,22 @@ for i in range(iterations):
 			currentroom.addneighbor(newroom3)
 			newroom3.addneighbor(currentroom)
 
+			# find which walls overlap between this room and the newest added room
+			overlapped = []
 
+			for owall in currentroom.walls:
+				if owall in newroom3.walls:
+					overlapped.append(owall)
+			print ("OVERLAP")
+			print(overlapped)
+
+			#remove the corners
+			for x in overlapped:
+				if (cornercheck(newroom3,x)):
+					overlapped.remove(x)
+			for x in overlapped:
+				if (cornercheck(currentroom,x)):
+					overlapped.remove(x)		
 			
 
 
@@ -278,13 +308,29 @@ for i in range(iterations):
 			quadtable[walltotest.x + doorcheck.x][walltotest.y+doorcheck.y] = FloorBlock(19,19,(walltotest.x+doorcheck.x)*20,(walltotest.y+doorcheck.y)*20,(0,0,0))
 
 
+
 			lastroom = rooms[-1]
-			#lastroom.floortiles.append(Vector2(walltotest.x,walltotest.y))
-			currentroom.floortiles.append(Vector2(walltotest.x,walltotest.y))
+
+			for i in overlapped:
+				quadtable[i.x][i.y] = FloorBlock(19,19,i.x*20,i.y*20,(0,0,0))
+				if (i in currentroom.walls):
+					currentroom.walls.remove(i)	
+					currentroom.floortiles.append(i)
+				if (i in lastroom.walls):
+					lastroom.walls.remove(i)
+					lastroom.floortiles.append(i)
+				# we need to do the same thing here as below because we have started using the rooms themselves
+				# we need to alter the wall tiles and switch them to the floor tiles at the overlapped spaces
+
+			
+
+			#the wall is has already been turned into a floor above so the next few lines are causing errors
+
+			##currentroom.floortiles.append(Vector2(walltotest.x,walltotest.y))
 
 			# remove the randomly selected wall from the room (thedoor) and also from the last room
-			lastroom.walls.remove(Vector2(walltotest.x,walltotest.y))
-			currentroom.walls.remove(Vector2(walltotest.x,walltotest.y))
+			##lastroom.walls.remove(Vector2(walltotest.x,walltotest.y))
+			##currentroom.walls.remove(Vector2(walltotest.x,walltotest.y))
 			
 			if (Vector2(walltotest.x + doorcheck.x,walltotest.y+doorcheck.y) in lastroom.walls):
 				lastroom.walls.remove(Vector2(walltotest.x + doorcheck.x,walltotest.y+doorcheck.y))
