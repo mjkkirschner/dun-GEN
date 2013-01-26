@@ -20,7 +20,21 @@ public class InGamePythonInterpreter4 : MonoBehaviour
 	public int ycenter;
 	public int xsd;
 	public int ysd;
+	
 	public int wallheight;
+	
+	public bool doormaxalways;
+	public bool doorminalways;
+	public bool doorrandomize;
+	public int doorwidth;
+	
+	public bool flatlevel;
+	public int heightmin;
+	public int heightmax;
+	
+	
+
+		
 	
 	
 	public List<GameObject> tiles = new List<GameObject>();
@@ -440,6 +454,20 @@ if (colliders.Length > 0)
 			m_pyEnv.ExposeVariable("ycenter",ycenter);
 			m_pyEnv.ExposeVariable("xsd",xsd);
 			m_pyEnv.ExposeVariable("ysd",ysd);
+			
+			m_pyEnv.ExposeVariable("doormaxalways",doormaxalways);
+			m_pyEnv.ExposeVariable("doorminalways",doorminalways);
+			m_pyEnv.ExposeVariable("doorrandomize",doorrandomize);			
+			m_pyEnv.ExposeVariable("doorwidth",doorwidth);
+			
+			m_pyEnv.ExposeVariable("flatlevel",flatlevel);
+			m_pyEnv.ExposeVariable("heightmax",heightmax);
+			m_pyEnv.ExposeVariable("heightmin",heightmin);
+			
+			
+			
+			
+			
 			
 			PythonEnvironment.CommandResult result = m_pyEnv.RunCommand(m_pyCode);
 			

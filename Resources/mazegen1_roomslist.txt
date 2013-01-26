@@ -104,6 +104,14 @@ def cornercheck(room,walltotest):
 	
 
 
+# doormax-always (bool that forces clearing all overlapping walls) (if this is disabled)check
+# doormin-always (bool that forces only one door to be deleted)check
+	# doorrandomize (if the others are false then check if this is true)check   
+# doorwidth (int size of doors)
+
+#flatlevel bool (enforces no change in height, so all zeights are the same)check
+#height min int check
+#height max int check
 
 
 # iterations = iterations
@@ -159,7 +167,7 @@ for i in newroom.floortiles:
   
 
 
-
+#maybe be able to set this distribution over time...... might be cool, with multi curves in unity
 for i in range(iterations):
 	 	roomtotest = Vector2(int(math.fabs(random.gauss(xcenter,xsd)))+1,int(math.fabs(random.gauss(ycenter,ysd)))+1)
 
@@ -291,10 +299,10 @@ for i in range(iterations):
 
 			## calculate the zheight of the room before we add the heights to the table
 			## we'll set the range of heights here, through a variable exposed to this enviornment
-			newroom3.setzheight(currentroom.zheight + random.randint(0,2))
-
-
-
+			if (flatlevel):
+				newroom3.setzheight(currentroom.zheight)
+			else:  	
+				newroom3.setzheight(currentroom.zheight + random.randint(heightmin,heightmax))
 			rooms.append(newroom3)
 
 			for i in newroom3.walls:
@@ -310,8 +318,12 @@ for i in range(iterations):
 			  
 
 			for i in newroom3.floortiles:
-			  quadtable[i.x][i.y] = FloorBlock(19,19,i.x*20,i.y*20,(0,0,0))
-			  quadtableheights[i.x][i.y] = newroom3.zheight
+				quadtable[i.x][i.y] = FloorBlock(19,19,i.x*20,i.y*20,(0,0,0))
+				#added this check to attempt a bug fix for rooms with floors that are 2 levels...not sure if needed
+				if (quadtableheights[i.x][i.y] > newroom3.zheight):
+					quadtableheights[i.x][i.y] = quadtableheights[i.x][i.y]
+				else:			
+					quadtableheights[i.x][i.y] = newroom3.zheight
 
 			quadtable[walltotest.x][walltotest.y] = FloorBlock(19,19,walltotest.x*20,walltotest.y*20,(0,0,0))    
 			quadtable[walltotest.x + doorcheck.x][walltotest.y+doorcheck.y] = FloorBlock(19,19,(walltotest.x+doorcheck.x)*20,(walltotest.y+doorcheck.y)*20,(0,0,0))
@@ -320,9 +332,21 @@ for i in range(iterations):
 
 			lastroom = rooms[-1]
 
-			if (len(overlapped) > 1):
-				doorwidth = random.randrange(1,len(overlapped))
-			else: doorwidth = 1		
+
+
+
+			if (doormaxalways):
+				doorwidth = len(overlapped)
+
+			elif (doorminalways):
+				doorwidth = 1 	
+			elif (doorrandomize):	
+				if (len(overlapped) > 1):
+					doorwidth = random.randrange(1,len(overlapped))
+				else: doorwidth = 1		
+			else:
+				doorwidth = min(doorwidth,len(overlapped)-1)
+
 
 			for i in range(doorwidth):
 				wall = overlapped[i]
