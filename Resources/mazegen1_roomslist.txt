@@ -189,7 +189,7 @@ for i in range(iterations):
 		left = False
 
 
-		print top,bottom,right,left
+		#print top,bottom,right,left
 
 		if type(quadtable[walltotest.x][walltotest.y+1]) == TerrainBlock: 
 			top = True
@@ -222,7 +222,7 @@ for i in range(iterations):
 		if top is False and bottom is False and left is False and right is False:
 			continue
 
-		print top,bottom,right,left	
+		#print top,bottom,right,left	
 				
 		scandir = walltotest - currentroom.center
 		print walltotest
@@ -233,13 +233,13 @@ for i in range(iterations):
 			scanend =  walltotest + (Vector2(int(math.floor(roomtotest.x/2)+1),1*roomtotest.y+2))
 			scanstart = Vector2(walltotest.x - int(math.floor(roomtotest.x/2)),walltotest.y+1)
 			doorcheck = Vector2(0,-1)
-			print "top"
+			#print "top"
 
 		elif bottom == True:
 			scanend = Vector2(walltotest.x + int(math.floor(roomtotest.x/2)+1),walltotest.y)
 			scanstart = walltotest + (Vector2(-1*int(math.floor(roomtotest.x/2)),-1*(roomtotest.y)))
 			doorcheck = Vector2(0,1)
-			print "bottom"
+			#print "bottom"
 				
 		
 		elif left == True:
@@ -247,14 +247,14 @@ for i in range(iterations):
 			scanstart = walltotest + (Vector2(-1*roomtotest.x,-1*int(math.floor(roomtotest.y/2))))
 			scanend = Vector2(walltotest.x,walltotest.y + int(math.floor(roomtotest.y/2))+1)
 			doorcheck = Vector2(1,0)
-			print "left"
+			#print "left"
 			
 		
 		elif right == True:
 			scanend= (walltotest + (Vector2(1*(roomtotest.x+2),1*int(math.floor(roomtotest.y/2))+1)))
 			scanstart = Vector2(walltotest.x + 1,walltotest.y -1*int(math.floor(roomtotest.y/2)))
 			doorcheck = Vector2(-1,0)
-			print "right"
+			#print "right"
 			
 			
 
@@ -337,15 +337,18 @@ for i in range(iterations):
 
 			if (doormaxalways):
 				doorwidth = len(overlapped)
-
+				print ("BAD")
 			elif (doorminalways):
-				doorwidth = 1 	
-			elif (doorrandomize):	
+				doorwidth = 1
+				print ("BAD")	
+			elif (doorrandomize):
+				print ("BAD")	
 				if (len(overlapped) > 1):
 					doorwidth = random.randrange(1,len(overlapped))
 				else: doorwidth = 1		
 			else:
-				doorwidth = min(doorwidth,len(overlapped)-1)
+				doorwidth = min(desireddoorwidth,len(overlapped))
+				print ("GOOD")
 
 
 			for i in range(doorwidth):

@@ -26,7 +26,7 @@ public class InGamePythonInterpreter4 : MonoBehaviour
 	public bool doormaxalways;
 	public bool doorminalways;
 	public bool doorrandomize;
-	public int doorwidth;
+	public int desiredDoorWidth;
 	
 	public bool flatlevel;
 	public int heightmin;
@@ -458,7 +458,7 @@ if (colliders.Length > 0)
 			m_pyEnv.ExposeVariable("doormaxalways",doormaxalways);
 			m_pyEnv.ExposeVariable("doorminalways",doorminalways);
 			m_pyEnv.ExposeVariable("doorrandomize",doorrandomize);			
-			m_pyEnv.ExposeVariable("doorwidth",doorwidth);
+			m_pyEnv.ExposeVariable("desireddoorwidth",desiredDoorWidth);
 			
 			m_pyEnv.ExposeVariable("flatlevel",flatlevel);
 			m_pyEnv.ExposeVariable("heightmax",heightmax);
