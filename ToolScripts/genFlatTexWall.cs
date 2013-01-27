@@ -21,7 +21,6 @@ public class genFlatTexWall : MonoBehaviour {
 		
 		
 	
-	//collider.enabled = false;
 		
 	for (float x = collider.bounds.min.x; x < collider.bounds.max.x; x+=.03125f)
 		{
@@ -31,7 +30,7 @@ public class genFlatTexWall : MonoBehaviour {
 				
 				Vector3 rayorigin = new Vector3(x,y,collider.bounds.min.z) - new Vector3(0,0,1);
 				RaycastHit hit = new RaycastHit();
-				if(Physics.Raycast(rayorigin,new Vector3(0,0,2.0f),out hit,Mathf.Infinity,layermask))
+				if(Physics.Raycast(rayorigin,new Vector3(0,0,1.0f),out hit))//,Mathf.Infinity,layermask))
 				
 					{
 					
