@@ -12,7 +12,10 @@ public class genFlatTexWall : MonoBehaviour {
 	if (null == this.gameObject.GetComponent<Collider>())
 		{	
 		return;
-		}	
+		}
+		
+	this.gameObject.transform.localPosition += new Vector3(0,100,0);	
+		
 	Collider collider =  this.gameObject.GetComponent<Collider>();
 	// we need the texture to be bigger than the collider by some factor, so each block is not a pixel	
 	int height =(int) collider.bounds.size.y*32;
@@ -20,7 +23,7 @@ public class genFlatTexWall : MonoBehaviour {
 	walltexture = new Texture2D(width,height);		
 		
 		
-	
+	//iterate the collider from smallest to largest edge
 		
 	for (float x = collider.bounds.min.x; x < collider.bounds.max.x; x+=.03125f)
 		{
@@ -36,7 +39,7 @@ public class genFlatTexWall : MonoBehaviour {
 					
 					Vector2 texcoord = hit.textureCoord;
 					Texture2D hittexture = hit.collider.renderer.material.mainTexture as Texture2D;
-					Debug.Log(hit.collider.gameObject);
+					//Debug.Log(hit.collider.gameObject);
 					//Debug.Log(texcoord);
 					
 					//null reference errors from cubes with no maintexture, only color.
@@ -47,7 +50,7 @@ public class genFlatTexWall : MonoBehaviour {
 					Color color = hittexture.GetPixel((int)texcoord.x,(int)texcoord.y);	
 					walltexture.SetPixel((int)(32*x -collider.bounds.min.x) ,(int)(32*y - collider.bounds.min.y),color);		
     				walltexture.Apply();
-					Debug.Log(color);		
+					//Debug.Log(color);		
 						
 					}
 
@@ -60,7 +63,8 @@ public class genFlatTexWall : MonoBehaviour {
 	//because we know what the mesh is and what texture it uses we can now look up the pixel at this coordinate
 	// and save this to a new texture the size of the wall...		
 		}
-	
+	this.gameObject.transform.localPosition += new Vector3(0,-100,0);
+		
 	}
 	
 	// Update is called once per frame
