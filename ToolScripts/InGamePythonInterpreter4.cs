@@ -32,7 +32,7 @@ public class InGamePythonInterpreter4 : MonoBehaviour
 	public int heightmin;
 	public int heightmax;
 	
-	
+	public LayerMask layermask;
 
 		
 	
@@ -365,9 +365,9 @@ if (colliders.Length > 0)
 		// set the size =  to the size of the bounds		
 		collider.size = totalBounds.size;			
 		}	
-// have to center this correctly somehow		
 		
-	
+	//now that the collider is sized correctly and centered we can generate the texture of the wall		
+	roomcenter.transform.FindChild("topwall").GetComponent<genFlatTexWall>().genWallTextures();
 	}
 	
 	
@@ -386,9 +386,15 @@ if (colliders.Length > 0)
 		GameObject floor = new GameObject("floor");
 		
 		leftwall.transform.parent = newroomcenter.transform;
+		
 		rightwall.transform.parent = newroomcenter.transform;
+		
 		bottomwall.transform.parent = newroomcenter.transform;
+		
 		topwall.transform.parent = newroomcenter.transform;
+		topwall.layer = 2;
+		topwall.AddComponent<genFlatTexWall>();
+		
 		floor.transform.parent = newroomcenter.transform;
 		
 		
