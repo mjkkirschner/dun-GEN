@@ -330,9 +330,9 @@ if (roomcenter.transform.FindChild("topwall").gameObject.GetComponent<Collider>(
 	DestroyImmediate(roomcenter.transform.FindChild("topwall").GetComponent<Collider>());
 		Debug.Log("destroy topwall collider");
 		}
-		
+//get all the children's colliders		
 Collider[] colliders = roomcenter.transform.FindChild("topwall").gameObject.GetComponentsInChildren<Collider>();
-//create a new center vector for each room
+//create a new center vector for each room if the there are children of the topwall
 if (colliders.Length > 0)
 		{
 		Vector3 center = new Vector3(0,0,0);
@@ -343,7 +343,7 @@ if (colliders.Length > 0)
 				center = center + col.gameObject.transform.position;	
 				}		
 				
-				center = center / colliders.Length;
+				center = center / (colliders.Length);
 				
 				
 		//create a new bounds object at that center		

@@ -30,7 +30,7 @@ public class genFlatTexWall : MonoBehaviour {
 			for (float y = collider.bounds.min.y; y < collider.bounds.max.y; y+=.03125f)
 			{	
 				
-				
+				//Debug.Log(new Vector2(x,y));
 				Vector3 rayorigin = new Vector3(x,y,collider.bounds.min.z) - new Vector3(0,0,1);
 				RaycastHit hit = new RaycastHit();
 				if(Physics.Raycast(rayorigin,new Vector3(0,0,1.0f),out hit))//,Mathf.Infinity,layermask))
@@ -45,18 +45,25 @@ public class genFlatTexWall : MonoBehaviour {
 					//null reference errors from cubes with no maintexture, only color.
 					texcoord.x *= hittexture.width; 
 					texcoord.y *= hittexture.height;
-							
+					float colliderwidth = collider.bounds.size.x;
+					float colliderheight = collider.bounds.size.y;
+					
+					int newy = (int)(((y - collider.bounds.min.y) * walltexture.height) / colliderheight) + 0;
+					int newx = (int)(((x - collider.bounds.min.x) * walltexture.width) / colliderwidth) + 0;
+					
 						
-					Color color = hittexture.GetPixel((int)texcoord.x,(int)texcoord.y);	
-					walltexture.SetPixel((int)(32*x -collider.bounds.min.x) ,(int)(32*y - collider.bounds.min.y),color);		
+					Color color = hittexture.GetPixel((int)texcoord.x,(int)texcoord.y);
+					//Debug.Log( new Vector2((int)(32*(x/colliderwidth) ,(int)(32*(colliderheight))));
+					walltexture.SetPixel(newx,newy,color);		
     				walltexture.Apply();
 					//Debug.Log(color);		
-						
+					texcoord = Vector2.zero;	
 					}
 
 		}
 		
 		
+			
 	// this is the texture coordinate of where the ray hit, we can then sample the correct texture...
 	//why are we doing this, why not just read pixels of all the textures... because we will get the wrong
 	// sides, this lets us get the flat sides and rebuild textures with non flat uvs.		
