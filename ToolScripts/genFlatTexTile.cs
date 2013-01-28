@@ -1,13 +1,13 @@
 using UnityEngine;
 using System.Collections;
 
-public class genFlatTexWall : MonoBehaviour {
+public class genFlatTexTile : MonoBehaviour {
 	
 	private LayerMask layermask; 
 	public Texture2D walltexture;
 		
 	// Use this for initialization
-	public void genWallTextures () {
+	public void genTileTextures () {
 	
 	if (null == this.gameObject.GetComponent<Collider>())
 		{	
