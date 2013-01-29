@@ -34,7 +34,7 @@ public class InGamePythonInterpreter4 : MonoBehaviour
 	
 	public LayerMask layermask;
 
-		
+	public List<GameObject> roomparents = new List<GameObject>();
 	
 	
 	public List<GameObject> tiles = new List<GameObject>();
@@ -309,14 +309,15 @@ import UnityEngine
 			}
 	
 		}
-//	roomcenter.AddComponent<CombineChildren>();
-//	
-//	roomcenter.transform.FindChild("topwall").gameObject.AddComponent<CombineChildren>();	
-//	roomcenter.transform.FindChild("bottomwall").gameObject.AddComponent<CombineChildren>();
-//	roomcenter.transform.FindChild("leftwall").gameObject.AddComponent<CombineChildren>();
-//	roomcenter.transform.FindChild("rightwall").gameObject.AddComponent<CombineChildren>();
-//	roomcenter.transform.FindChild("floor").gameObject.AddComponent<CombineChildren>();
+//	// we should move this to a function that can be called from any room... or from the manager here	
+//	foreach(Transform wall in roomcenter.transform)
+//		{
+//			combineSubMeshCheck(wall.gameObject);
+//			wall.gameObject.AddComponent<CombineChildren>();
+//		}	
+//			
 //		
+//	roomcenter.AddComponent<CombineChildren>();
 //	roomcenter.GetComponent<CombineChildren>().CallCombineOnAllChilds();
 		
 		
@@ -367,7 +368,7 @@ if (colliders.Length > 0)
 		}	
 		
 	//now that the collider is sized correctly and centered we can generate the texture of the wall		
-	roomcenter.transform.FindChild("topwall").GetComponent<genFlatTexWall>().genWallTextures();
+	//roomcenter.transform.FindChild("topwall").GetComponent<genFlatTexWall>().genWallTextures();
 	}
 	
 	
@@ -378,6 +379,7 @@ if (colliders.Length > 0)
 		
 		//create a new centerobject and the 4 walls and floor subparents
 		GameObject newroomcenter = new GameObject();
+		roomparents.Add(newroomcenter);
 		
 		GameObject leftwall = new GameObject("leftwall");
 		GameObject rightwall = new GameObject("rightwall");
@@ -405,10 +407,45 @@ if (colliders.Length > 0)
 		
 	}	
 		
-	
-	
-	
-	
+	public void combineSubMeshCheck(GameObject wall)
+	{
+		int vertcount = 0;
+		List<GameObject> childtiles = new List<GameObject>();
+		// iterate each tile of the parent wall
+	foreach (Transform child in wall.transform)
+			
+		{	childtiles.Add(child.gameObject);
+			//get all children mesh filters
+			MeshFilter[] meshes = child.gameObject.GetComponentsInChildren<MeshFilter>();
+			foreach (MeshFilter meshfilter in meshes)
+			{	//count the vertexes that we would combine together
+				vertcount += meshfilter.mesh.vertexCount;
+				// if theres too many verts for a combined mesh we need to create a second parent(topwall2 for example)
+					
+			}
+			
+			
+		
+		}
+		
+		if (vertcount > 64000)
+				{
+				
+				GameObject subparent = new GameObject("subparent");
+				//subparent.AddComponent<CombineChildren>();	
+				// this funkiness places the subparent under the roomobject rather then under the wall parent
+				subparent.transform.parent = wall.transform.parent.transform;
+				// now we need to move half the children to the new parent
+				for (int i = 0; i < childtiles.Count/2; i++)
+						{
+						
+						childtiles[i].transform.parent = subparent.transform; 
+					
+					
+						}
+				}	
+		
+	}
 	
 	
 	
@@ -449,7 +486,7 @@ if (colliders.Length > 0)
         if (GUI.Button(new Rect(50, 270, 80, 40), "Run"))
         {	
 			
-			
+			roomparents.Clear();
 			rooms.Clear();
 			crooms.Clear();
 			
@@ -596,6 +633,7 @@ if (colliders.Length > 0)
 				}
 				tiles.Clear();
 				wallmasterlist.Clear();
+				roomparents.Clear();
 				Debug.Log(m_pyOutput);
 				
 				foreach (roomsimple room in crooms){

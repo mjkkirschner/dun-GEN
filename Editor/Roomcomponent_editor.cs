@@ -69,7 +69,8 @@ public class Roomcomponent_editor : Editor
 		}
 		EditorGUILayout.EndScrollView();
 		EditorGUILayout.EndVertical();
-		if (GUILayout.Button("RegenRoom")){
+		if (GUILayout.Button("RegenRoom"))
+			{
 			//regen the room
 			// find the main generator object that holds the parse methods and lists of objects ( this is like a static class or manager)
 			// we may need to replace this with the maze generator c# object and update it with the parse methods we've written
@@ -83,6 +84,9 @@ public class Roomcomponent_editor : Editor
 					foreach(Transform tile in wall.transform)
 						{
 					// need to search deeper now that we have the wall parents here we are not removing the correct tiles from the list.
+					//we also need to delete all the combined meshes on the objects...(from the combinations)...THIS
+					//IS A BAD WAY TO DO IT, we should instead have a button to call combine on all objects so we can play with the level
+					//until this point...
 					Destroy(tile.gameObject);
 					interperter.tiles.Remove(tile.gameObject);
 						}	
@@ -96,7 +100,6 @@ public class Roomcomponent_editor : Editor
 			
 			
 			}
-
-	
+		
 	}
 }
