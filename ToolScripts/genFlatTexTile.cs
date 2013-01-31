@@ -86,9 +86,7 @@ public class genFlatTexTile : MonoBehaviour {
 	
 	
 	void Start (){
-	
-	layermask = GameObject.Find("Interpreter").GetComponent<InGamePythonInterpreter4>().layermask;
-		
+			
 	}
 	
 	

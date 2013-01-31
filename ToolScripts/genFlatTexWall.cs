@@ -33,7 +33,7 @@ public class genFlatTexWall : MonoBehaviour {
 				//Debug.Log(new Vector2(x,y));
 				Vector3 rayorigin = new Vector3(x,y,collider.bounds.min.z) - new Vector3(0,0,1);
 				RaycastHit hit = new RaycastHit();
-				if(Physics.Raycast(rayorigin,new Vector3(0,0,1.0f),out hit))//,Mathf.Infinity,layermask))
+				if(Physics.Raycast(rayorigin,new Vector3(0,0,1.0f),out hit))
 				
 					{
 					
@@ -87,7 +87,6 @@ public class genFlatTexWall : MonoBehaviour {
 	
 	void Start (){
 	
-	layermask = GameObject.Find("Interpreter").GetComponent<InGamePythonInterpreter4>().layermask;
 		
 	}
 	

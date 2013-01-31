@@ -14,7 +14,10 @@ public class Roomcomponent_editor : Editor
 	{
 		base.OnInspectorGUI();
 		
+		
 		EditorGUILayout.BeginVertical();
+		//first blank space
+		
 		for (int index = 0; index< (target as Roomcomponent).modelarray.Count;index++){
 		GameObject model =  (target as Roomcomponent).modelarray[index];
 		(target as Roomcomponent).modelarray[index] = (GameObject)EditorGUILayout.ObjectField(model, typeof(GameObject),true);
@@ -23,14 +26,14 @@ public class Roomcomponent_editor : Editor
 		if (GUILayout.Button("Add Tile"))
 		{
 		(target as Roomcomponent).modelarray.Add((target as Roomcomponent).modelarray[0]);
-		(target as Roomcomponent).Start();
+		(target as Roomcomponent).load_models();
 		Repaint();		
 		}
 		
 		if (GUILayout.Button("Remove Tile"))
 		{
 		(target as Roomcomponent).modelarray.RemoveAt((target as Roomcomponent).modelarray.Count-1);
-		(target as Roomcomponent).Start();
+		(target as Roomcomponent).load_models();
 		Repaint();		
 		}
 		
@@ -38,7 +41,7 @@ public class Roomcomponent_editor : Editor
 		
 		if (GUI.changed)
 		{
-		(target as Roomcomponent).Start();
+		(target as Roomcomponent).load_models();
 		Repaint();	
 		}
 		
@@ -87,8 +90,9 @@ public class Roomcomponent_editor : Editor
 					//we also need to delete all the combined meshes on the objects...(from the combinations)...THIS
 					//IS A BAD WAY TO DO IT, we should instead have a button to call combine on all objects so we can play with the level
 					//until this point...
-					Destroy(tile.gameObject);
+					
 					interperter.tiles.Remove(tile.gameObject);
+					DestroyImmediate(tile.gameObject);
 						}	
 				}
 				

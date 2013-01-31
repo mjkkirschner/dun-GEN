@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System;
-using IronPython;	
+//using IronPython;	
 using System.Runtime.Serialization.Formatters.Binary;	
 using System.IO;	
 	
@@ -10,12 +10,14 @@ using System.IO;
 
 
 /// <summary>
-/// A simple python behaviour that demonstrates how code can be ran in the runtime engine
+/// The Manager that interfaces with the unity editor, sets all data, runs algorithm, and builds the level after parsing data
+/// would benefit from being made more modular, all parsing for instance could happen within another object
 /// </summary>
 public class InGamePythonInterpreter4 : MonoBehaviour 
 {	
+	public GameObject generator;
 	public levelobject curlevel;
-	public int iterations;
+	public int iterations = 10;
 	public int xcenter;
 	public int ycenter;
 	public int xsd;
@@ -32,7 +34,7 @@ public class InGamePythonInterpreter4 : MonoBehaviour
 	public int heightmin;
 	public int heightmax;
 	
-	public LayerMask layermask;
+	//public LayerMask layermask;
 
 	public List<GameObject> roomparents = new List<GameObject>();
 	
@@ -40,132 +42,125 @@ public class InGamePythonInterpreter4 : MonoBehaviour
 	public List<GameObject> tiles = new List<GameObject>();
 	
 	
-	
-	
-	public GameObject model1;
-	public GameObject model2;
-	public GameObject model3;
-	public GameObject model4;
-	
 	public List<GameObject> modelarray = new List<GameObject>();
 	public List<GameObject> modelpreviewlist = new List<GameObject>();
 	
 	private List<roomsimple> crooms = new List<roomsimple>();
 	public List<Vector3> wallmasterlist = new List<Vector3>();
-	private List<object> rooms = new List<object>();
+	private List<room> rooms = new List<room>();
 	
 	private int[,] table;
 	public int[,] heighttable;
-	private TextAsset testcode;
-    private string m_pyCode;
-    private string m_pyOutput;
-    private PythonEnvironment m_pyEnv;
+	//private TextAsset testcode;
+   // private string m_pyCode;
+   // private string m_pyOutput;
+   // private PythonEnvironment m_pyEnv;
 	 
-    private const string INITIALIZATION_CODE =
-@"
-import clr
-clr.AddReference('UnityEngine')
-import UnityEngine
-";
+//    private const string INITIALIZATION_CODE =
+//@"
+//import clr
+//clr.AddReference('UnityEngine')
+//import UnityEngine
+//";
 	
 	
-	public void parseLevel(int[,]table,int [,]heighttable)
-	{
-	for (int i = 0;i < 200; i++){
-					for (int j = 0;j < 200; j++){
-				
-						// build the walls
-						if (table[i,j] == 3){
-							int height = heighttable[i,j];
-							for (int k = 0; k < height; k++){
-								Vector3 rot = new Vector3(UnityEngine.Random.Range(0.0f,360.0f),UnityEngine.Random.Range(0.0f,360.0f),UnityEngine.Random.Range(0.0f,360.0f));
-								rot.x = Mathf.Round(rot.x / 90) * 90;
-								rot.y = Mathf.Round(rot.y / 90) * 90;
-								rot.z = Mathf.Round(rot.z / 90) * 90;
-								
-							GameObject currentgo = Instantiate(modelarray[UnityEngine.Random.Range(0,modelarray.Count)],new Vector3(i,k,j),Quaternion.identity) as GameObject;
-							currentgo.transform.Rotate(rot.x,rot.y,rot.z);
-							tiles.Add(currentgo);
-								
-							}
-						}
-						// build the floor tiles.
-						if (table[i,j] == 2){
-							int height = heighttable[i,j];
-							for (int k = height-2; k < height-1; k++){
-							GameObject currentgo = Instantiate(model4,new Vector3(i,k,j),Quaternion.identity) as GameObject;
-								tiles.Add(currentgo);	
-	
-					}
-	
-				}
-			}
-	
-			
-		}	
-		
-		
-	}	
-	public void parseroom(List<object> roomslist, int[,] heighttable ){
-		
-		
-	foreach (System.Object room in roomslist){
-			
-			GameObject roomcenter = new GameObject();
-			
-			IList<object>walls = m_pyEnv.m_pythonEngine.Operations.GetMember<IList<object>>(room,"walls");
-				foreach (System.Object vector2 in walls){
-					float posx = m_pyEnv.m_pythonEngine.Operations.GetMember<float>(vector2,"x");
-					float posy = m_pyEnv.m_pythonEngine.Operations.GetMember<float>(vector2,"y");
-					Vector2 position = new Vector2(posx,posy);
-					//Debug.Log(position);
-					if ((posx >= 0.0) && (posy >= 0.0)){ 
-						
-					int height = heighttable[(int)posx,(int)posy];
-							for (int k = 0; k < height; k++){
-								Vector3 rot = new Vector3(UnityEngine.Random.Range(0.0f,360.0f),UnityEngine.Random.Range(0.0f,360.0f),UnityEngine.Random.Range(0.0f,360.0f));
-								rot.x = Mathf.Round(rot.x / 90) * 90;
-								rot.y = Mathf.Round(rot.y / 90) * 90;
-								rot.z = Mathf.Round(rot.z / 90) * 90;
-							
-							if (wallmasterlist.Contains(new Vector3(posx,k,posy))){
-							
-							break;
-								}
-							wallmasterlist.Add(new Vector3(posx,k,posy));
-							GameObject currentgo = Instantiate(modelarray[UnityEngine.Random.Range(0,modelarray.Count)],new Vector3(posx,k,posy),Quaternion.identity) as GameObject;
-							currentgo.transform.Rotate(rot.x,rot.y,rot.z);
-							tiles.Add(currentgo);
-							currentgo.transform.parent = roomcenter.transform;
-						
-						
-						}
-					}
-				}
-			
-		IList<object>floors = m_pyEnv.m_pythonEngine.Operations.GetMember<IList<object>>(room,"floortiles");
-			foreach (System.Object vector2 in floors){
-					float posx = m_pyEnv.m_pythonEngine.Operations.GetMember<float>(vector2,"x");
-					float posy = m_pyEnv.m_pythonEngine.Operations.GetMember<float>(vector2,"y");
-					Vector2 position = new Vector2(posx,posy);
-					if ((posx >= 0.0) && (posy >= 0.0)){
-					
-						int height = heighttable[(int)posx,(int)posy];
-							for (int k = height-2; k < height-1; k++){
-							GameObject currentgo = Instantiate(model4,new Vector3(posx,k,posy),Quaternion.identity) as GameObject;
-								tiles.Add(currentgo);	
-						currentgo.transform.parent = roomcenter.transform;
-					
-					}
-			
-				}	
-		
-		
-		
-			}
-	
-		}
-}
+//	public void parseLevel(int[,]table,int [,]heighttable)
+//	{
+//	for (int i = 0;i < 200; i++){
+//					for (int j = 0;j < 200; j++){
+//				
+//						// build the walls
+//						if (table[i,j] == 3){
+//							int height = heighttable[i,j];
+//							for (int k = 0; k < height; k++){
+//								Vector3 rot = new Vector3(UnityEngine.Random.Range(0.0f,360.0f),UnityEngine.Random.Range(0.0f,360.0f),UnityEngine.Random.Range(0.0f,360.0f));
+//								rot.x = Mathf.Round(rot.x / 90) * 90;
+//								rot.y = Mathf.Round(rot.y / 90) * 90;
+//								rot.z = Mathf.Round(rot.z / 90) * 90;
+//								
+//							GameObject currentgo = Instantiate(modelarray[UnityEngine.Random.Range(0,modelarray.Count)],new Vector3(i,k,j),Quaternion.identity) as GameObject;
+//							currentgo.transform.Rotate(rot.x,rot.y,rot.z);
+//							tiles.Add(currentgo);
+//								
+//							}
+//						}
+//						// build the floor tiles.
+//						if (table[i,j] == 2){
+//							int height = heighttable[i,j];
+//							for (int k = height-2; k < height-1; k++){
+//							GameObject currentgo = Instantiate(model4,new Vector3(i,k,j),Quaternion.identity) as GameObject;
+//								tiles.Add(currentgo);	
+//	
+//					}
+//	
+//				}
+//			}
+//	
+//			
+//		}	
+//		
+//		
+//	}	
+//	public void parseroom(List<object> roomslist, int[,] heighttable ){
+//		
+//		
+//	foreach (System.Object room in roomslist){
+//			
+//			GameObject roomcenter = new GameObject();
+//			
+//			IList<object>walls = m_pyEnv.m_pythonEngine.Operations.GetMember<IList<object>>(room,"walls");
+//				foreach (System.Object vector2 in walls){
+//					float posx = m_pyEnv.m_pythonEngine.Operations.GetMember<float>(vector2,"x");
+//					float posy = m_pyEnv.m_pythonEngine.Operations.GetMember<float>(vector2,"y");
+//					Vector2 position = new Vector2(posx,posy);
+//					//Debug.Log(position);
+//					if ((posx >= 0.0) && (posy >= 0.0)){ 
+//						
+//					int height = heighttable[(int)posx,(int)posy];
+//							for (int k = 0; k < height; k++){
+//								Vector3 rot = new Vector3(UnityEngine.Random.Range(0.0f,360.0f),UnityEngine.Random.Range(0.0f,360.0f),UnityEngine.Random.Range(0.0f,360.0f));
+//								rot.x = Mathf.Round(rot.x / 90) * 90;
+//								rot.y = Mathf.Round(rot.y / 90) * 90;
+//								rot.z = Mathf.Round(rot.z / 90) * 90;
+//							
+//							if (wallmasterlist.Contains(new Vector3(posx,k,posy))){
+//							
+//							break;
+//								}
+//							wallmasterlist.Add(new Vector3(posx,k,posy));
+//							GameObject currentgo = Instantiate(modelarray[UnityEngine.Random.Range(0,modelarray.Count)],new Vector3(posx,k,posy),Quaternion.identity) as GameObject;
+//							currentgo.transform.Rotate(rot.x,rot.y,rot.z);
+//							tiles.Add(currentgo);
+//							currentgo.transform.parent = roomcenter.transform;
+//						
+//						
+//						}
+//					}
+//				}
+//			
+//		IList<object>floors = m_pyEnv.m_pythonEngine.Operations.GetMember<IList<object>>(room,"floortiles");
+//			foreach (System.Object vector2 in floors){
+//					float posx = m_pyEnv.m_pythonEngine.Operations.GetMember<float>(vector2,"x");
+//					float posy = m_pyEnv.m_pythonEngine.Operations.GetMember<float>(vector2,"y");
+//					Vector2 position = new Vector2(posx,posy);
+//					if ((posx >= 0.0) && (posy >= 0.0)){
+//					
+//						int height = heighttable[(int)posx,(int)posy];
+//							for (int k = height-2; k < height-1; k++){
+//							GameObject currentgo = Instantiate(model4,new Vector3(posx,k,posy),Quaternion.identity) as GameObject;
+//								tiles.Add(currentgo);	
+//						currentgo.transform.parent = roomcenter.transform;
+//					
+//					}
+//			
+//				}	
+//		
+//		
+//		
+//			}
+//	
+//		}
+//}
 	
 	
 	
@@ -285,7 +280,7 @@ import UnityEngine
 						if (!edgecheck(posx,posy,room)){
 							int height = heighttable[(int)posx,(int)posy];
 							int k = height-2;
-							GameObject currentgo = Instantiate(model4,new Vector3(posx,k,posy),Quaternion.identity) as GameObject;
+							GameObject currentgo = Instantiate(modelarray[3],new Vector3(posx,k,posy),Quaternion.identity) as GameObject;
 							tiles.Add(currentgo);	
 							currentgo.transform.parent = roomcenter.transform.FindChild("floor").transform;
 						}
@@ -296,7 +291,7 @@ import UnityEngine
 					
 						int height = heighttable[(int)posx,(int)posy];
 							for (int k = height-3; k < height-1; k++){
-								GameObject currentgo = Instantiate(model4,new Vector3(posx,k,posy),Quaternion.identity) as GameObject;
+								GameObject currentgo = Instantiate(modelarray[3],new Vector3(posx,k,posy),Quaternion.identity) as GameObject;
 								tiles.Add(currentgo);	
 								currentgo.transform.parent = roomcenter.transform.FindChild("floor").transform;
 						
@@ -309,16 +304,7 @@ import UnityEngine
 			}
 	
 		}
-//	// we should move this to a function that can be called from any room... or from the manager here	
-//	foreach(Transform wall in roomcenter.transform)
-//		{
-//			combineSubMeshCheck(wall.gameObject);
-//			wall.gameObject.AddComponent<CombineChildren>();
-//		}	
-//			
-//		
-//	roomcenter.AddComponent<CombineChildren>();
-//	roomcenter.GetComponent<CombineChildren>().CallCombineOnAllChilds();
+
 		
 		
 //lets try building a box of bounding all children here!
@@ -401,6 +387,8 @@ if (colliders.Length > 0)
 		
 		
 		newroomcenter.AddComponent<Roomcomponent>().room = room;
+		newroomcenter.GetComponent<Roomcomponent>().load_models();
+		
 		parseroom2(room,heighttable,modelarray,newroomcenter);	
 	
 			
@@ -449,21 +437,44 @@ if (colliders.Length > 0)
 	
 	
 	
+	public void loadlevel()
+		{
+            string fileName = "file.txt";
+			BinaryFormatter bf = new BinaryFormatter();
+			FileStream fs = new FileStream(fileName,FileMode.Open,FileAccess.Read);
+			levelobject loadedlevel = (levelobject)bf.Deserialize(fs);
+			fs.Close();
+			
+			table = loadedlevel.table;
+			heighttable = loadedlevel.heighttable; 
+			crooms = loadedlevel.roomslist;
+			
+			foreach (GameObject tile in tiles)
+				{
+				DestroyImmediate(tile);
+				}
+				tiles.Clear();
+				wallmasterlist.Clear();
+				roomparents.Clear();
+				//Debug.Log(m_pyOutput);
+				
+				foreach (roomsimple room in crooms){
+					parseroom2(room,heighttable,modelarray);
+				}
+			}
+	
+	
 	// Use this for initialization
 	void Start () 
     {
 		
 		
-		modelarray.Add(model1);
-		modelarray.Add(model2);
-		modelarray.Add(model3);
-		modelarray.Add(model4);
-		
-		testcode  = Resources.Load("mazegen1_roomslist") as TextAsset;
-        m_pyCode = testcode.text;
-		m_pyEnv = new PythonEnvironment();
-        m_pyEnv.RunCommand(INITIALIZATION_CODE);
-        m_pyOutput = string.Empty;
+
+//		testcode  = Resources.Load("mazegen1_roomslist") as TextAsset;
+//        m_pyCode = testcode.text;
+//		m_pyEnv = new PythonEnvironment();
+//        m_pyEnv.RunCommand(INITIALIZATION_CODE);
+//        m_pyOutput = string.Empty;
 		 
 			//m_pyEnv.RunCommand(m_pyCode);	
 		
@@ -478,128 +489,163 @@ if (colliders.Length > 0)
 	}
 
 
-    void OnGUI()
-    {
+   // void OnGUI()
+    //{
 		
 		
-        m_pyCode = GUI.TextArea(new Rect(50, 50, 600, 200), m_pyCode);
-        if (GUI.Button(new Rect(50, 270, 80, 40), "Run"))
-        {	
+        //m_pyCode = GUI.TextArea(new Rect(50, 50, 600, 200), m_pyCode);
+      //  if (GUI.Button(new Rect(50, 270, 80, 40), "Run"))
+        public void Run ()
+		{	
 			
 			roomparents.Clear();
 			rooms.Clear();
 			crooms.Clear();
 			
 			
-            m_pyOutput = string.Empty;
-           	m_pyEnv.ExposeVariable("iterations",iterations);
-			m_pyEnv.ExposeVariable("xcenter",xcenter);
-			m_pyEnv.ExposeVariable("ycenter",ycenter);
-			m_pyEnv.ExposeVariable("xsd",xsd);
-			m_pyEnv.ExposeVariable("ysd",ysd);
-			
-			m_pyEnv.ExposeVariable("doormaxalways",doormaxalways);
-			m_pyEnv.ExposeVariable("doorminalways",doorminalways);
-			m_pyEnv.ExposeVariable("doorrandomize",doorrandomize);			
-			m_pyEnv.ExposeVariable("desireddoorwidth",desiredDoorWidth);
-			
-			m_pyEnv.ExposeVariable("flatlevel",flatlevel);
-			m_pyEnv.ExposeVariable("heightmax",heightmax);
-			m_pyEnv.ExposeVariable("heightmin",heightmin);
-			
-			
+//            m_pyOutput = string.Empty;
+//           	m_pyEnv.ExposeVariable("iterations",iterations);
+//			m_pyEnv.ExposeVariable("xcenter",xcenter);
+//			m_pyEnv.ExposeVariable("ycenter",ycenter);
+//			m_pyEnv.ExposeVariable("xsd",xsd);
+//			m_pyEnv.ExposeVariable("ysd",ysd);
+//			
+//			m_pyEnv.ExposeVariable("doormaxalways",doormaxalways);
+//			m_pyEnv.ExposeVariable("doorminalways",doorminalways);
+//			m_pyEnv.ExposeVariable("doorrandomize",doorrandomize);			
+//			m_pyEnv.ExposeVariable("desireddoorwidth",desiredDoorWidth);
+//			
+//			m_pyEnv.ExposeVariable("flatlevel",flatlevel);
+//			m_pyEnv.ExposeVariable("heightmax",heightmax);
+//			m_pyEnv.ExposeVariable("heightmin",heightmin);
 			
 			
 			
 			
-			PythonEnvironment.CommandResult result = m_pyEnv.RunCommand(m_pyCode);
 			
 			
-			table =(int[,])  m_pyEnv.m_scriptScope.GetVariable("convertarr");
-			heighttable = (int[,]) m_pyEnv.m_scriptScope.GetVariable("convertarrheights");
+			//PythonEnvironment.CommandResult result = m_pyEnv.RunCommand(m_pyCode);
+			
+			//if theres no generator object create one
+			if (GameObject.Find("Generator") == null)
+				{
+			
+			generator = new GameObject("Generator");
+			generator.AddComponent<mazegenerator_python_standin>();
+			
+				}
+			else
+			{
+			
+			DestroyImmediate(generator);
+			generator = new GameObject("Generator");
+			generator.AddComponent<mazegenerator_python_standin>();
+			
+			}	
+			//run the generation
+			
+			generator.GetComponent<mazegenerator_python_standin>().generate(iterations,xcenter,ycenter,xsd,ysd,doormaxalways,doorminalways,doorrandomize,desiredDoorWidth,flatlevel,heightmin,heightmax);
+		
+
+			table =(int[,]) generator.GetComponent<mazegenerator_python_standin>().convertedQuadTable;
+			heighttable = (int[,]) generator.GetComponent<mazegenerator_python_standin>().heightsTable;
+			
+			
+			//table =(int[,])  m_pyEnv.m_scriptScope.GetVariable("convertarr");
+			//heighttable = (int[,]) m_pyEnv.m_scriptScope.GetVariable("convertarrheights");
 			
 			// here we are going to take all the room objects from python and turn them into c# objects that can be serialized
-			IList<object> orgrooms = (IList<object>) m_pyEnv.m_scriptScope.GetVariable("rooms");
-			
-			foreach (object element in orgrooms){
-				rooms.Add((object)element);	
-			}
+//			IList<object> orgrooms = (IList<object>) m_pyEnv.m_scriptScope.GetVariable("rooms");
+//			
+//			foreach (object element in orgrooms){
+//				rooms.Add((object)element);	
+//			}
+		
+			rooms = generator.GetComponent<mazegenerator_python_standin>().rooms; 		
+		
+		
 			// the next few sections iterate all rooms from python and create roomsimple objets from them (so they can be serialzied)
-			foreach (System.Object room in rooms){	
-				
-				
-				int xpos = m_pyEnv.m_pythonEngine.Operations.GetMember<int>(room,"xpos");
-				int ypos = m_pyEnv.m_pythonEngine.Operations.GetMember<int>(room,"ypos");
-				
-				int width = m_pyEnv.m_pythonEngine.Operations.GetMember<int>(room,"width");
-				int height = m_pyEnv.m_pythonEngine.Operations.GetMember<int>(room,"height");
-				System.Object center = m_pyEnv.m_pythonEngine.Operations.GetMember<System.Object>(room,"center"); 			
-					float centerposx = m_pyEnv.m_pythonEngine.Operations.GetMember<float>(center,"x");
-					float centerposy = m_pyEnv.m_pythonEngine.Operations.GetMember<float>(center,"y");
-				Vector2 centerpos = new Vector2	(centerposx,centerposy);
-					
-					
-					
-				IList<object>walls = m_pyEnv.m_pythonEngine.Operations.GetMember<IList<object>>(room,"walls");
-	
-				List<Vector2> currentwalllist = new List<Vector2>();
-				List<Vector2> currentfloortilelist = new List<Vector2>();	
-					foreach (System.Object vector2 in walls){
-					float posx = m_pyEnv.m_pythonEngine.Operations.GetMember<float>(vector2,"x");
-					float posy = m_pyEnv.m_pythonEngine.Operations.GetMember<float>(vector2,"y");
-					Vector2 position = new Vector2(posx,posy);	
-					currentwalllist.Add(position);
-				
-				
-			}
-						
-			IList<object>floors = m_pyEnv.m_pythonEngine.Operations.GetMember<IList<object>>(room,"floortiles");
-			foreach (System.Object vector2 in floors){
-					float posx = m_pyEnv.m_pythonEngine.Operations.GetMember<float>(vector2,"x");
-					float posy = m_pyEnv.m_pythonEngine.Operations.GetMember<float>(vector2,"y");
-					Vector2 position = new Vector2(posx,posy);
-					currentfloortilelist.Add(position);
-				
-								
+//			foreach (System.Object room in rooms){	
+//				
+//				
+//				int xpos = m_pyEnv.m_pythonEngine.Operations.GetMember<int>(room,"xpos");
+//				int ypos = m_pyEnv.m_pythonEngine.Operations.GetMember<int>(room,"ypos");
+//				
+//				int width = m_pyEnv.m_pythonEngine.Operations.GetMember<int>(room,"width");
+//				int height = m_pyEnv.m_pythonEngine.Operations.GetMember<int>(room,"height");
+//				System.Object center = m_pyEnv.m_pythonEngine.Operations.GetMember<System.Object>(room,"center"); 			
+//					float centerposx = m_pyEnv.m_pythonEngine.Operations.GetMember<float>(center,"x");
+//					float centerposy = m_pyEnv.m_pythonEngine.Operations.GetMember<float>(center,"y");
+//				Vector2 centerpos = new Vector2	(centerposx,centerposy);
+//					
+//					
+//					
+//				IList<object>walls = m_pyEnv.m_pythonEngine.Operations.GetMember<IList<object>>(room,"walls");
+//	
+//				List<Vector2> currentwalllist = new List<Vector2>();
+//				List<Vector2> currentfloortilelist = new List<Vector2>();	
+//					foreach (System.Object vector2 in walls){
+//					float posx = m_pyEnv.m_pythonEngine.Operations.GetMember<float>(vector2,"x");
+//					float posy = m_pyEnv.m_pythonEngine.Operations.GetMember<float>(vector2,"y");
+//					Vector2 position = new Vector2(posx,posy);	
+//					currentwalllist.Add(position);
+//				
+//				
+//			}
+//						
+//			IList<object>floors = m_pyEnv.m_pythonEngine.Operations.GetMember<IList<object>>(room,"floortiles");
+//			foreach (System.Object vector2 in floors){
+//					float posx = m_pyEnv.m_pythonEngine.Operations.GetMember<float>(vector2,"x");
+//					float posy = m_pyEnv.m_pythonEngine.Operations.GetMember<float>(vector2,"y");
+//					Vector2 position = new Vector2(posx,posy);
+//					currentfloortilelist.Add(position);
+//				
+//								
+//			}	
+//			// finally create the serializble room object from all the data we got from python and add it to the room list (crooms)
+//			roomsimple currentroom = new roomsimple(width,height,centerpos,currentwalllist,currentfloortilelist,xpos,ypos);
+//				
+//				crooms.Add(currentroom);
+//				
+//		}	
+		
+		
+		foreach (room _room in rooms)
+			{
+			roomsimple currentroom = new roomsimple(_room.width,_room.height,_room.center,_room.walls,_room.floortiles,_room.xpos,_room.ypos);
+			crooms.Add(currentroom);
 			}	
-			// finally create the serializble room object from all the data we got from python and add it to the room list (crooms)
-			roomsimple currentroom = new roomsimple(width,height,centerpos,currentwalllist,currentfloortilelist,xpos,ypos);
 				
-				crooms.Add(currentroom);
-				
-		}	
-				
-				
-				
-            if (!string.IsNullOrEmpty(result.output))
-            {
-                m_pyOutput =  result.output;
+			// we should check if generate returned something(maybe a bool on completion)	
+           // if (!string.IsNullOrEmpty(result.output))
+            //{
+                //m_pyOutput =  result.output;
 				foreach (GameObject tile in tiles)
 				{
-				Destroy(tile);
+				DestroyImmediate(tile);
 				}
 				tiles.Clear();
 				wallmasterlist.Clear();
-				Debug.Log(m_pyOutput);
+				//Debug.Log(m_pyOutput);
 				
-				foreach (roomsimple room in crooms){
+				foreach (roomsimple room in crooms)
+				{
 					parseroom2(room,heighttable,modelarray);
 				}
 					
-			 curlevel = new levelobject(table,heighttable,crooms);	
+				 curlevel = new levelobject(table,heighttable,crooms);	
 						
 			}
 							
-            if (result.exception != null)
-            {
-                m_pyOutput += "Python exception : " + result.exception.Message;
-				Debug.Log(m_pyOutput);
+            //if (result.exception != null)
+            //{
+              //  m_pyOutput += "Python exception : " + result.exception.Message;
+			//	Debug.Log(m_pyOutput);
 				
-            }
-		}
+            //}
 		
 		
-		 if (GUI.Button(new Rect(200, 270, 80, 40), "Save"))
+		 public void save()
         {
             string fileName = "file.txt";
 			BinaryFormatter bf = new BinaryFormatter();
@@ -613,33 +659,10 @@ if (colliders.Length > 0)
 			
 		}
 		
-		 if (GUI.Button(new Rect(300, 270, 80, 40), "Load"))
+		public void load()
         {
 			
-			
-            string fileName = "file.txt";
-			BinaryFormatter bf = new BinaryFormatter();
-			FileStream fs = new FileStream(fileName,FileMode.Open,FileAccess.Read);
-			levelobject loadedlevel = (levelobject)bf.Deserialize(fs);
-			fs.Close();
-			
-			table = loadedlevel.table;
-			heighttable = loadedlevel.heighttable; 
-			crooms = loadedlevel.roomslist;
-			
-			foreach (GameObject tile in tiles)
-				{
-				Destroy(tile);
-				}
-				tiles.Clear();
-				wallmasterlist.Clear();
-				roomparents.Clear();
-				Debug.Log(m_pyOutput);
-				
-				foreach (roomsimple room in crooms){
-					parseroom2(room,heighttable,modelarray);
-				}
-			
+			loadlevel();
 			
 			
 			
@@ -653,7 +676,5 @@ if (colliders.Length > 0)
 		
 		
         
-        GUI.TextArea(new Rect(50, 330, 600, 300), m_pyOutput);
     }
 
-}

@@ -15,6 +15,10 @@ public class room
 	public float width;
 	public float height;
 	public Vector2 center;
+	public int zheight = 1;
+	
+	public List<room> neighbors = new List<room>();
+	
 	
 	public room(float Xpos, float Ypos, float Width, float Height)
 		{

@@ -58,9 +58,9 @@ public class Roomcomponent : MonoBehaviour
 	}
 	
 	
-	
+	// this cant be on awake, we need this to happen at editortime...oncreation?enable maybe?
 	public void Awake(){
-	modelarray.AddRange(GameObject.Find("Interpreter").GetComponent<InGamePythonInterpreter4>().modelarray);
+	//modelarray.AddRange(GameObject.Find("Interpreter").GetComponent<InGamePythonInterpreter4>().modelarray);
 	
 	
 		
@@ -129,8 +129,8 @@ public class Roomcomponent : MonoBehaviour
 		
 			
 			
-			Destroy(btex);
-			GameObject.Destroy(testcam);
+			DestroyImmediate(btex);
+			GameObject.DestroyImmediate(testcam);
 			Debug.Log("Destroyed testcam");
 			UpdatePreviews();
 			
@@ -139,9 +139,13 @@ public class Roomcomponent : MonoBehaviour
 	
 	
 	
-	public void Start(){
+	public void load_models(){
 		
-		
+			// this cant be on awake, we need this to happen at editortime...oncreation?enable maybe?
+		if (modelarray.Count <= 0)
+			{
+			modelarray.AddRange(GameObject.Find("Interpreter").GetComponent<InGamePythonInterpreter4>().modelarray);
+			}
 		Createpreviewfolder();
 		
 		GameObject testcam = new GameObject();
