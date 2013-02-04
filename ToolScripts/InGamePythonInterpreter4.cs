@@ -49,6 +49,8 @@ public class InGamePythonInterpreter4 : MonoBehaviour
 	public List<Vector3> wallmasterlist = new List<Vector3>();
 	private List<room> rooms = new List<room>();
 	
+	
+	// we cannot serialize these because they are 2d arrays, we could instead store this as a binary asset and get it back
 	private int[,] table;
 	public int[,] heighttable;
 	//private TextAsset testcode;
@@ -209,6 +211,7 @@ public class InGamePythonInterpreter4 : MonoBehaviour
 			//use the parent parameter as the parent of the room, it also holds the RoomComponent later
 						
 			GameObject roomcenter = parent;
+			roomcenter.transform.position = Vector3.zero;
 			// add each tile made to the tile list
 			tiles.Add(roomcenter);
 			foreach (Vector2Serializer wall in room.walls){
@@ -260,8 +263,8 @@ public class InGamePythonInterpreter4 : MonoBehaviour
 					
 					
 					
-					
-					
+							//I think the wrong positions are added to the walltobuild because of the offset roomcenter
+						
 					
 							//grab the roomcomponent of the current room/parent object, and store the actual walls that we build here.
 							// these are the blocks we WILL clear from the wallmasterlist when we regen the room
@@ -280,9 +283,17 @@ public class InGamePythonInterpreter4 : MonoBehaviour
 						if (!edgecheck(posx,posy,room)){
 							int height = heighttable[(int)posx,(int)posy];
 							int k = height-2;
+							
+					Vector3 rot = new Vector3(UnityEngine.Random.Range(0.0f,360.0f),UnityEngine.Random.Range(0.0f,360.0f),UnityEngine.Random.Range(0.0f,360.0f));
+								rot.x = Mathf.Round(rot.x / 90) * 90;
+								rot.y = Mathf.Round(rot.y / 90) * 90;
+								rot.z = Mathf.Round(rot.z / 90) * 90;
+					
+					
 							GameObject currentgo = Instantiate(modelarray[3],new Vector3(posx,k,posy),Quaternion.identity) as GameObject;
 							tiles.Add(currentgo);	
 							currentgo.transform.parent = roomcenter.transform.FindChild("floor").transform;
+							currentgo.transform.Rotate(rot.x,rot.y,rot.z);
 						}
 						
 						else{	
@@ -462,7 +473,19 @@ if (colliders.Length > 0)
 					parseroom2(room,heighttable,modelarray);
 				}
 			}
-	
+	public void loadlevelData()
+		{
+            string fileName = "auto_iteration_save.txt";
+			BinaryFormatter bf = new BinaryFormatter();
+			FileStream fs = new FileStream(fileName,FileMode.Open,FileAccess.Read);
+			levelobject loadedlevel = (levelobject)bf.Deserialize(fs);
+			fs.Close();
+			
+			table = loadedlevel.table;
+			heighttable = loadedlevel.heighttable; 
+			crooms = loadedlevel.roomslist;
+			
+			}
 	
 	// Use this for initialization
 	void Start () 
@@ -634,7 +657,7 @@ if (colliders.Length > 0)
 				}
 					
 				 curlevel = new levelobject(table,heighttable,crooms);	
-						
+				 save("auto_iteration_save.txt");		
 			}
 							
             //if (result.exception != null)
@@ -645,9 +668,9 @@ if (colliders.Length > 0)
             //}
 		
 		
-		 public void save()
+		 public void save(string filename)
         {
-            string fileName = "file.txt";
+            string fileName = filename;
 			BinaryFormatter bf = new BinaryFormatter();
 			FileStream fs = new FileStream(fileName,FileMode.Create,FileAccess.Write);
 			bf.Serialize(fs,curlevel);
@@ -659,6 +682,10 @@ if (colliders.Length > 0)
 			
 		}
 		
+	
+	
+	
+	
 		public void load()
         {
 			
@@ -669,8 +696,6 @@ if (colliders.Length > 0)
 			
 			
 		}
-		
-		
 		
 		
 		

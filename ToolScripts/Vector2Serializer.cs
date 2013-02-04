@@ -3,7 +3,7 @@ using System.Collections;
 using System;
 
 [System.Serializable]
-public struct Vector2Serializer
+public class Vector2Serializer
 {
 public float x;
 public float y;

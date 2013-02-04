@@ -162,7 +162,7 @@ public class InGamePythonInterpreter4_editor : Editor
 			{
 			
 			
-			(target as InGamePythonInterpreter4).save();
+			(target as InGamePythonInterpreter4).save("file.txt");
 			
 			}
 		

@@ -16,7 +16,7 @@ public class roomsimple
 	//public float ypos;
 	public float width;
 	public float height;
-	public Vector2Serializer center;
+	public Vector2Serializer center = new Vector2Serializer();
 	public float xpos;
 	public float ypos;
 	

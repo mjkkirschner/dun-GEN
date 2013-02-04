@@ -68,6 +68,24 @@ public class Roomcomponent : MonoBehaviour
 	
 	
 	
+	
+	
+	
+	
+	//this method is not available to nonpro users and so cant work for a tool on the asset store//
+	//can try instead rendering camereas directly into the inspector, or building textures by getting and 
+	//setting pixels the slow way, this shouldnt actually be that slow because we can save and reload the images
+	// the process will be pretty similar to before,  we'll move the block up, instantiate a or focal point basically,
+	// cast rays from the point and sweep a bounding box of the object, we can simplify by this by grabbing a flat texture,
+	// I'd be interested in generating flats of all sides in an atlas and showing those in the inspector.
+	
+	//process 2 will be: grab the block, move it up, generate a texture for each side, some nested for loops that march the around the exterior
+	//of the block shooting rays in towards it in straight lines, lookup the texture color based on texture coords returned from the hitpoint
+	// and save this color to the correct texture 
+	//atlas all the textures together
+	//provide this texture to the roomcomponent as a preview list so that buttons can be created showing these atlases
+	// we can use the atlases later to build simplified models
+	
 	IEnumerator generatepreviews(GameObject testcam){
 				
 				
@@ -151,6 +169,18 @@ public class Roomcomponent : MonoBehaviour
 		GameObject testcam = new GameObject();
 		
 		StartCoroutine(generatepreviews(testcam));
+		
+		foreach (GameObject model in modelarray)
+		{
+			
+			if (model.GetComponent<genFlatTexTile>() == null)
+			{
+			model.AddComponent<genFlatTexTile>();
+			model.GetComponent<genFlatTexTile>().genTileTextures();
+			}
+			
+			
+		}
 		
 			}
 
