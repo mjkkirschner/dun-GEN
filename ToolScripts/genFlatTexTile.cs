@@ -1,5 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System.IO;
+using System;
 
 public class genFlatTexTile : MonoBehaviour {
 	
@@ -9,13 +11,235 @@ public class genFlatTexTile : MonoBehaviour {
 	
 	public List<Texture2D> textures = new List<Texture2D>();
 	
-	// Use this for initialization
+	
+	
+	public void Createpreviewfolder()
+	{
+		string path = Application.dataPath + "/asset_textures";
+		 try 
+        {
+            // Determine whether the directory exists. 
+            if (Directory.Exists(path)) 
+            {
+                Debug.Log("That path exists already.");
+                return;
+            }
+
+            // Try to create the directory.
+            DirectoryInfo di = Directory.CreateDirectory(path);
+            Console.WriteLine("The directory was created successfully at {0}.", Directory.GetCreationTime(path));
+
+        } 
+        catch (Exception e) 
+        {
+            Console.WriteLine("The process failed: {0}", e.ToString());
+        } 
+        finally {}
+    }
+	
+	
+	
+	
+	public void updateColors (Color[] colors, Vector3 rayorigin,Vector2 rayPixPos, Vector3 direction, Texture2D currentSideTex, float xmin, float xmax, float ymin, float ymax)
+	{
+						RaycastHit hit = new RaycastHit();
+							if(Physics.Raycast(rayorigin,direction,out hit))
+							
+								{
+								
+								Vector2 texcoord = hit.textureCoord;
+								Texture2D hittexture = hit.collider.renderer.material.mainTexture as Texture2D;
+								//Debug.Log(hit.collider.gameObject);
+								//Debug.Log(texcoord);
+								
+								//null reference errors from cubes with no maintexture, only color.
+								texcoord.x *= hittexture.width; 
+								texcoord.y *= hittexture.height;
+								float colliderwidth = Mathf.Abs(xmax - xmin);
+								float colliderheight = Mathf.Abs(ymax - ymin);
+								
+								//linear transformations for x and y coords
+								int newy = (int)(((rayPixPos.y - ymin) * currentSideTex.height) / colliderheight) + 0;
+								int newx = (int)(((rayPixPos.x - xmin) * currentSideTex.width) / colliderwidth) + 0;
+								
+									
+								Color color = hittexture.GetPixel((int)texcoord.x,(int)texcoord.y);
+								//Debug.Log( new Vector2((int)(32*(x/colliderwidth) ,(int)(32*(colliderheight))));
+								int newindex = newx + (newy * currentSideTex.width);
+								
+								
+								
+								colors[newindex] = color;		
+			    				
+								//Debug.Log(color);		
+								texcoord = Vector2.zero;	
+								}	
+		
+		
+	}
+		
+	
+	public void iterateColliderBounds(Collider collider, float resolution, Vector3 direction) 
+	
+	{
+		float xmin = 0;
+		float xmax = 0;
+		float ymin = 0;
+		float ymax = 0;		
+		Vector3 rayorigin = Vector3.zero;
+		Vector2 rayPixPos;
+		// if the direction is facing forward or back
+		if (direction.z != 0){
+			
+			// if the direction is facing forward then set bounds
+			if (direction.z > 0) {
+				xmin = collider.bounds.min.x;
+				xmax = collider.bounds.max.x;
+				ymin = collider.bounds.min.y;
+				ymax = collider.bounds.max.y;
+							}
+			else {
+				// if the direction is facing backward then set bounds switched
+//				xmin = collider.bounds.max.x;
+//				xmax = collider.bounds.min.x;
+//				ymin = collider.bounds.max.y;
+//				ymax = collider.bounds.min.y;
+				
+				
+				xmin = collider.bounds.min.x;
+				xmax = collider.bounds.max.x;
+				ymin = collider.bounds.min.y;
+				ymax = collider.bounds.max.y;
+				
+				
+				 }
+		}
+		
+		if (direction.y != 0){
+			// if the direction is up or down then set bounds
+			if (direction.y > 0) {
+				xmin = collider.bounds.min.x;
+				xmax = collider.bounds.max.x;
+				ymin = collider.bounds.min.z;
+				ymax = collider.bounds.max.z;
+							}
+			else {
+				
+				xmin = collider.bounds.min.x;
+				xmax = collider.bounds.max.x;
+				ymin = collider.bounds.min.z;
+				ymax = collider.bounds.max.z;
+					
+				 }	
+				
+			}
+		if (direction.x != 0){
+			// if the direction is left or right then set bounds
+			if (direction.x > 0) {
+				xmin = collider.bounds.min.z;
+				xmax = collider.bounds.max.z;
+				ymin = collider.bounds.min.y;
+				ymax = collider.bounds.max.y;
+							}
+			else {
+
+				xmin = collider.bounds.min.z;
+				xmax = collider.bounds.max.z;
+				ymin = collider.bounds.min.y;
+				ymax = collider.bounds.max.y;
+					
+				 }		
+				}
+			
+			
+			
+		int height =(int) Mathf.Abs(ymax-ymin)*(int)resolution;
+		int width = (int) Mathf.Abs(xmax-xmin)*(int)resolution;		
+		
+					
+		Texture2D currentSideTex = new Texture2D(width,height);
+		Color[] colors = currentSideTex.GetPixels();		
+		
+		
+		for (float x = xmin; x < xmax; x+=(1/resolution))
+					{
+					
+				for (float y = ymin; y < ymax; y+=(1/resolution))
+						
+						{	
+				
+							if (direction.z != 0)
+								{
+							
+								
+								 rayorigin = new Vector3(x,y,collider.bounds.center.z) - direction;
+								
+				
+								}
+							else if (direction.y != 0)
+								{
+							
+								
+								 rayorigin = new Vector3(x,collider.bounds.center.y,y) - direction;
+								
+				
+								}
+							
+							else if (direction.x != 0)
+								{
+							
+								
+								 rayorigin = new Vector3(collider.bounds.center.x,y,x) - direction;
+								
+				
+								}
+						// this causes an error where the origin is too small, smaller than minimum...i think
+						//	possible to use another variable that holds the unmodified vector
+						rayPixPos = new Vector2(x,y);
+						
+						
+						//we now update colors for each pixel, not sure about the ray orgin calcs above though
+						updateColors(colors,rayorigin,rayPixPos,direction,currentSideTex,xmin,xmax,ymin,ymax);
+					
+							
+						// after the colors are updated we probably need to update the textures 
+							
+						
+						
+								
+							}
+			
+							
+				
+						}
+		
+				currentSideTex.SetPixels(colors);
+				currentSideTex.Apply();	
+				textures.Add(currentSideTex);		
+					
+			
+					}
+		
+	
+			
 	public void genTileTextures () {
 	
+	Debug.Log("starting gentile tex");		
+		
+	Createpreviewfolder();	
+	
+	textureAtlas = new Texture2D(512,512);
+		
+	if (!File.Exists(Application.dataPath +"/asset_textures/" +this.name)){	
+		
+		
+	Vector3 direction;	
+		
 	if (null == this.gameObject.GetComponent<Collider>())
 		{	
 		if (null == this.gameObject.GetComponentInChildren<Collider>())
-			{	
+			{
+			Debug.Log("breakout of gen tile texs, MISSING colliders");	
 			return;
 			}	
 		else
@@ -33,84 +257,55 @@ public class genFlatTexTile : MonoBehaviour {
 			
 		
 		
-	this.gameObject.transform.localPosition += new Vector3(0,100,0);	
+	this.gameObject.transform.localPosition += new Vector3(100,100,100);	
 		
 	
-	// we need the texture to be bigger than the collider by some factor, so each block is not a pixel	
-	int height =(int) collider.bounds.size.y*32;
-	int width = (int) collider.bounds.size.x*32;		
-		
-		
-		
-	//iterate the collider from smallest to largest edge
-	// need to do this code 6 times for each side... changing the direction of the ray and the position of the iteration	
-	
-	for (float z = -1; z <= 1; z = z+2)
-	{ Texture2D currentSideTex = new Texture2D(width,height);
-		Color[] colors = currentSideTex.GetPixels();	
-		for (float x = collider.bounds.min.x; x < collider.bounds.max.x; x+=.03125f)
-		{
-			for (float y = collider.bounds.min.y; y < collider.bounds.max.y; y+=.03125f)
-			{	
-				
-				//Debug.Log(new Vector2(x,y));
-				Vector3 rayorigin = new Vector3(x,y,collider.bounds.center.z) - new Vector3(0,0,z);
-				RaycastHit hit = new RaycastHit();
-				if(Physics.Raycast(rayorigin,new Vector3(0,0,z),out hit))
-				
-					{
-					
-					Vector2 texcoord = hit.textureCoord;
-					Texture2D hittexture = hit.collider.renderer.material.mainTexture as Texture2D;
-					//Debug.Log(hit.collider.gameObject);
-					//Debug.Log(texcoord);
-					
-					//null reference errors from cubes with no maintexture, only color.
-					texcoord.x *= hittexture.width; 
-					texcoord.y *= hittexture.height;
-					float colliderwidth = collider.bounds.size.x;
-					float colliderheight = collider.bounds.size.y;
-					
-					int newy = (int)(((y - collider.bounds.min.y) * currentSideTex.height) / colliderheight) + 0;
-					int newx = (int)(((x - collider.bounds.min.x) * currentSideTex.width) / colliderwidth) + 0;
-					
-						
-					Color color = hittexture.GetPixel((int)texcoord.x,(int)texcoord.y);
-					//Debug.Log( new Vector2((int)(32*(x/colliderwidth) ,(int)(32*(colliderheight))));
-					int newindex = newx + (newy * currentSideTex.width);
-					colors[newindex] = color;		
-    				
-					//Debug.Log(color);		
-					texcoord = Vector2.zero;	
-					}
-			
+		//need to call this 6 times with 6 directions
 
+
+	for (int x = -1; x <= 1; x += 2){ 	
+	
+				direction = new Vector3(x,0,0);
+		iterateColliderBounds(collider,32,direction);
+		}
+	for (int y = -1; y <= 1; y += 2){
+					direction = new Vector3(0,y,0);
+		iterateColliderBounds(collider,32,direction);
+			}
+	for (int z = -1; z <= 1; z += 2){
+					direction = new Vector3(0,0,z);
+		iterateColliderBounds(collider,32,direction);
+				}			
+		
+	
+	
+			
+	textureAtlas.PackTextures(textures.ToArray(),0);
+			
+	byte[] texturetosave = textureAtlas.EncodeToPNG();
+	File.WriteAllBytes(Application.dataPath + "/asset_textures/"+this.name ,texturetosave);		
+			
+			
+	this.gameObject.transform.localPosition += new Vector3(-100,-100,-100);
+		
 		}
 		
+	else{
+			
+		
+		
+		 using (BinaryReader reader = new BinaryReader(File.Open(Application.dataPath +"/asset_textures/" + this.name, FileMode.Open)))
+			{
+			textureAtlas.LoadImage(reader.ReadBytes((int)reader.BaseStream.Length));
+			}	
 		
 			
-	// this is the texture coordinate of where the ray hit, we can then sample the correct texture...
-	//why are we doing this, why not just read pixels of all the textures... because we will get the wrong
-	// sides, this lets us get the flat sides and rebuild textures with non flat uvs.		
-	//because we know what the mesh is and what texture it uses we can now look up the pixel at this coordinate
-	// and save this to a new texture the size of the wall...		
-		}
-	currentSideTex.SetPixels(colors);
-	currentSideTex.Apply();	
-	textures.Add(currentSideTex);		
-	}	
-	this.gameObject.transform.localPosition += new Vector3(0,-100,0);
-		
-	}
-	
-	// Update is called once per frame
-	void Update () {
-	
-	}
-	
-	
-	void Start (){
 			
+			
+		}	
+		
+		
+	
 	}
 	
 	

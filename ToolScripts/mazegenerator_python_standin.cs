@@ -116,8 +116,8 @@ public class mazegenerator_python_standin : MonoBehaviour
 		int roomindex = UnityEngine.Random.Range(0,rooms.Count-1);
 		room currentroom = rooms[roomindex];	
 		int wallindex = UnityEngine.Random.Range(0,currentroom.walls.Count-1);
-		Debug.Log(roomindex);
-		Debug.Log(currentroom.walls.Count-1);
+		//Debug.Log(roomindex);
+		//Debug.Log(currentroom.walls.Count-1);
 	
 		Vector2 walltotest = currentroom.walls[wallindex];
 		
@@ -185,7 +185,7 @@ public class mazegenerator_python_standin : MonoBehaviour
 			if (die != true)
 							{
 				for(int k = (int)scanstart.y; k < (int)scanend.y; k++) {	
-					Debug.Log(new Vector2(j,k));
+					//Debug.Log(new Vector2(j,k));
 					if ((j >=2) && (k >=2))
 						{	
 						block o = quadtable[j,k];
@@ -193,7 +193,7 @@ public class mazegenerator_python_standin : MonoBehaviour
 						if (o.type == "earth")
 							Debug.Log( "earth");
 						else{
-							Debug.Log( "something is here");
+							//Debug.Log( "something is here");
 							die = true;
 							}
 						}		
@@ -258,7 +258,7 @@ public class mazegenerator_python_standin : MonoBehaviour
 				
 			foreach (Vector2 walli in newroom3.walls) 
 			{	
-					Debug.Log(new Vector2(walli.x,walli.y));
+					//Debug.Log(new Vector2(walli.x,walli.y));
 			 		 quadtable[(int)walli.x,(int)walli.y] = new block(19,19,walli.x*20,walli.y*20,"wall");
 					if (heightsTable[(int)walli.x,(int)walli.y] > newroom3.zheight)
 							{

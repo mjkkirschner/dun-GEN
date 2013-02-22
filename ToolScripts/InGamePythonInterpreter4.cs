@@ -418,7 +418,7 @@ if (colliders.Length > 0)
 			MeshFilter[] meshes = child.gameObject.GetComponentsInChildren<MeshFilter>();
 			foreach (MeshFilter meshfilter in meshes)
 			{	//count the vertexes that we would combine together
-				vertcount += meshfilter.mesh.vertexCount;
+				vertcount += meshfilter.sharedMesh.vertexCount;
 				// if theres too many verts for a combined mesh we need to create a second parent(topwall2 for example)
 					
 			}
