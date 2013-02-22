@@ -165,6 +165,58 @@ public class InGamePythonInterpreter4 : MonoBehaviour
 //}
 	
 	
+public void createEncapCollider (GameObject roomcenter, string wallside) 
+	{
+//get colliders in each room's topwall		
+	
+	
+if (roomcenter.transform.FindChild(wallside).gameObject.GetComponent<Collider>())
+		{
+	DestroyImmediate(roomcenter.transform.FindChild(wallside).GetComponent<Collider>());
+		Debug.Log("destroy" +  wallside + "collider");
+		}
+//get all the children's colliders		
+Collider[] colliders = roomcenter.transform.FindChild(wallside).gameObject.GetComponentsInChildren<Collider>();
+//create a new center vector for each room if the there are children of the topwall
+if (colliders.Length > 0)
+		{
+		Vector3 center = new Vector3(0,0,0);
+		//iterate the colliders in all children and calculate their average center		
+		// I think this is wrong as we're getting the centroid, not the center of the bounds, so asymetric objects have offcenter centers
+		foreach (Collider col in colliders)
+				{
+							
+				center = center + col.gameObject.transform.position;	
+				}		
+				
+				center = center / (colliders.Length);
+				
+				
+		//create a new bounds object at that center		
+		Bounds totalBounds = colliders[0].bounds;
+		
+		//iterate all the children colliders encapsulate them with the bounds object just created
+		
+		foreach (Collider col in colliders)
+				{
+					
+				totalBounds.Encapsulate(col.bounds);
+				
+					
+				}		
+		//add a box collider to each top wall object	
+		roomcenter.transform.FindChild(wallside).gameObject.AddComponent<BoxCollider>();		
+		//get that collider we just added		
+		BoxCollider collider =(BoxCollider) roomcenter.transform.FindChild(wallside).gameObject.GetComponent<Collider>();
+		// set the center = to the center of the bounds
+		collider.center = totalBounds.center;
+		// set the size =  to the size of the bounds		
+		collider.size = totalBounds.size;			
+		}	
+		
+	//now that the collider is sized correctly and centered we can generate the texture of the wall		
+	//roomcenter.transform.FindChild("topwall").GetComponent<genFlatTexWall>().genWallTextures();
+	}
 	
 	public int wallcheck(float posx,float posy,roomsimple room){
 		if (posx == room.xpos-1){
@@ -317,55 +369,15 @@ public class InGamePythonInterpreter4 : MonoBehaviour
 		}
 
 		
-		
-//lets try building a box of bounding all children here!
+	createEncapCollider(roomcenter,"topwall");
+	createEncapCollider(roomcenter,"bottomwall");
+	createEncapCollider(roomcenter,"leftwall");
+	createEncapCollider(roomcenter,"rightwall");
+	createEncapCollider(roomcenter,"floor");
 
 		
-//get colliders in each room's topwall		
-
-if (roomcenter.transform.FindChild("topwall").gameObject.GetComponent<Collider>())
-		{
-	DestroyImmediate(roomcenter.transform.FindChild("topwall").GetComponent<Collider>());
-		Debug.Log("destroy topwall collider");
-		}
-//get all the children's colliders		
-Collider[] colliders = roomcenter.transform.FindChild("topwall").gameObject.GetComponentsInChildren<Collider>();
-//create a new center vector for each room if the there are children of the topwall
-if (colliders.Length > 0)
-		{
-		Vector3 center = new Vector3(0,0,0);
-		//iterate the colliders in all children and calculate their average center		
-		foreach (Collider col in colliders)
-				{
-							
-				center = center + col.gameObject.transform.position;	
-				}		
-				
-				center = center / (colliders.Length);
-				
-				
-		//create a new bounds object at that center		
-		Bounds totalBounds = new Bounds(center,new Vector3(0,0,0));		
-		//iterate all the children colliders encapsulate them with the bounds object just created	
-		foreach (Collider col in colliders)
-				{
-					
-				totalBounds.Encapsulate(col.bounds);
-				
-					
-				}		
-		//add a box collider to each top wall object	
-		roomcenter.transform.FindChild("topwall").gameObject.AddComponent<BoxCollider>();		
-		//get that collider we just added		
-		BoxCollider collider =(BoxCollider) roomcenter.transform.FindChild("topwall").gameObject.GetComponent<Collider>();
-		// set the center = to the center of the bounds
-		collider.center = center;
-		// set the size =  to the size of the bounds		
-		collider.size = totalBounds.size;			
-		}	
 		
-	//now that the collider is sized correctly and centered we can generate the texture of the wall		
-	//roomcenter.transform.FindChild("topwall").GetComponent<genFlatTexWall>().genWallTextures();
+		
 	}
 	
 	
@@ -375,7 +387,7 @@ if (colliders.Length > 0)
 	
 		
 		//create a new centerobject and the 4 walls and floor subparents
-		GameObject newroomcenter = new GameObject();
+		GameObject newroomcenter = new GameObject("Room");
 		roomparents.Add(newroomcenter);
 		
 		GameObject leftwall = new GameObject("leftwall");
