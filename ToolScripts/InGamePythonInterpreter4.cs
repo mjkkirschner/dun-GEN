@@ -164,10 +164,108 @@ public class InGamePythonInterpreter4 : MonoBehaviour
 //		}
 //}
 	
+
+	
+	
+public void clusterTiles(GameObject roomcenter, string wallside)
+	{
+		// BUGS IN THIS METHOD, clusters are subdividing too easily... WHAT THE HELL IS GOING ON! how do debug this, maybe do it visually
+	
+		
+		
+	// new list of wall tiles for this wall	
+	List<GameObject> currentWallTiles = new List<GameObject>();	
+	
+	// the first cluster	
+	GameObject cluster = new GameObject("cluster one");
+	
+		
+		
+	//parent  = the wall 	
+	GameObject parent = roomcenter.transform.FindChild(wallside).gameObject;	
+	
+	// add all children of the wall to the list of walltiles....	
+	foreach (Transform child in parent.transform)
+		{
+  		currentWallTiles.Add(child.gameObject);
+		}	
+		
+	if (currentWallTiles.Count == 0)
+		{
+			DestroyImmediate(cluster);
+			return;
+		
+		
+		}
+	
+	// stick the cluster into the the wall AFTER adding the tiles of that wall to a list, so the cluster is not counted as a tile
+	cluster.transform.parent = roomcenter.transform.FindChild(wallside).transform;	
+		
+	//randomly select a tile from the list, bug here...
+	
+	
+	GameObject currentTile = currentWallTiles[UnityEngine.Random.Range(0,currentWallTiles.Count-1)];
+	currentWallTiles.Remove(currentTile);
+	//place the randomly selected first tile into the first cluster
+	currentTile.transform.parent = cluster.transform;
+	
+	
+		//while the list contains more than one tile
+		while (currentWallTiles.Count > 0)
+		
+		{
+			float minDistance = 10000;
+			GameObject closest = null;
+			//check each gameobject in the list of wall tiles and the current tile ( which is first the first tile, then it's the previous closest tile
+				foreach (GameObject tileToCluster in currentWallTiles)
+					{
+						foreach (Transform clusterTile in cluster.transform){
+					float distance = Vector3.Distance(clusterTile.position,tileToCluster.transform.position);
+					if (distance <= minDistance)
+							{
+							minDistance = distance;
+							closest = tileToCluster;
+							}
+						}
+        			}
+			
+			if (null != closest){
+			
+			if (minDistance <= 1.0)
+				{	
+				closest.transform.parent = cluster.transform;
+				
+				
+				}
+			else
+				{
+				cluster = new GameObject("cluster_");
+				cluster.transform.parent = roomcenter.transform.FindChild(wallside).transform;
+				closest.transform.parent = cluster.transform;
+				}
+			
+				currentWallTiles.Remove(closest);
+
+				//currentTile = closest;
+			}
+			
+			
+		
+		}
+		
+		
+		
+	
+	}
+	
+	
+	
+	
+	
 	
 public void createEncapCollider (GameObject roomcenter, string wallside) 
 	{
-//get colliders in each room's topwall		
+//get colliders in each room's wallside		
 	
 	
 if (roomcenter.transform.FindChild(wallside).gameObject.GetComponent<Collider>())
@@ -175,47 +273,54 @@ if (roomcenter.transform.FindChild(wallside).gameObject.GetComponent<Collider>()
 	DestroyImmediate(roomcenter.transform.FindChild(wallside).GetComponent<Collider>());
 		Debug.Log("destroy" +  wallside + "collider");
 		}
-//get all the children's colliders		
-Collider[] colliders = roomcenter.transform.FindChild(wallside).gameObject.GetComponentsInChildren<Collider>();
-//create a new center vector for each room if the there are children of the topwall
-if (colliders.Length > 0)
+		
+// want to change this so we look for clusters inside and the children within these
+		
+foreach (Transform cluster in roomcenter.transform.FindChild(wallside).transform)
 		{
-		Vector3 center = new Vector3(0,0,0);
-		//iterate the colliders in all children and calculate their average center		
-		// I think this is wrong as we're getting the centroid, not the center of the bounds, so asymetric objects have offcenter centers
-		foreach (Collider col in colliders)
+		
+		//get all the children's colliders inside the cluster		
+		Collider[] colliders = cluster.GetComponentsInChildren<Collider>();
+		//create a new center vector for each room if the there are children of the topwall
+		if (colliders.Length > 0)
 				{
+				Vector3 center = new Vector3(0,0,0);
+				//iterate the colliders in all children and calculate their average center		
+				// I think this is wrong as we're getting the centroid, not the center of the bounds, so asymetric objects have offcenter centers
+				foreach (Collider col in colliders)
+						{
+									
+						center = center + col.gameObject.transform.position;	
+						}		
+						
+						center = center / (colliders.Length);
+						
+						
+				//create a new bounds and INSTEAD of centering it, just set it equal to the bounds of the first object...	
+				Bounds totalBounds = colliders[0].bounds;
+				
+				//iterate all the children colliders encapsulate them with the bounds object just created
+				
+				foreach (Collider col in colliders)
+						{
 							
-				center = center + col.gameObject.transform.position;	
-				}		
+						totalBounds.Encapsulate(col.bounds);
+						
+							
+						}		
+				//add a box collider to each top wall object	
+				cluster.gameObject.AddComponent<BoxCollider>();		
+				//get that collider we just added		
+				BoxCollider collider =(BoxCollider)cluster.gameObject.GetComponent<Collider>();
+				// set the center = to the center of the bounds
+				collider.center = totalBounds.center;
+				// set the size =  to the size of the bounds		
+				collider.size = totalBounds.size;			
+				}	
 				
-				center = center / (colliders.Length);
-				
-				
-		//create a new bounds object at that center		
-		Bounds totalBounds = colliders[0].bounds;
-		
-		//iterate all the children colliders encapsulate them with the bounds object just created
-		
-		foreach (Collider col in colliders)
-				{
-					
-				totalBounds.Encapsulate(col.bounds);
-				
-					
-				}		
-		//add a box collider to each top wall object	
-		roomcenter.transform.FindChild(wallside).gameObject.AddComponent<BoxCollider>();		
-		//get that collider we just added		
-		BoxCollider collider =(BoxCollider) roomcenter.transform.FindChild(wallside).gameObject.GetComponent<Collider>();
-		// set the center = to the center of the bounds
-		collider.center = totalBounds.center;
-		// set the size =  to the size of the bounds		
-		collider.size = totalBounds.size;			
-		}	
-		
-	//now that the collider is sized correctly and centered we can generate the texture of the wall		
-	//roomcenter.transform.FindChild("topwall").GetComponent<genFlatTexWall>().genWallTextures();
+			//now that the collider is sized correctly and centered we can generate the texture of the wall		
+			//roomcenter.transform.FindChild("topwall").GetComponent<genFlatTexWall>().genWallTextures();
+		}
 	}
 	
 	public int wallcheck(float posx,float posy,roomsimple room){
@@ -369,13 +474,19 @@ if (colliders.Length > 0)
 		}
 
 		
+	
+
+	clusterTiles(roomcenter,"topwall");
+	clusterTiles(roomcenter,"bottomwall");
+	clusterTiles(roomcenter,"leftwall");
+	clusterTiles(roomcenter,"rightwall");
+	clusterTiles(roomcenter,"floor");	
+	
 	createEncapCollider(roomcenter,"topwall");
 	createEncapCollider(roomcenter,"bottomwall");
 	createEncapCollider(roomcenter,"leftwall");
 	createEncapCollider(roomcenter,"rightwall");
-	createEncapCollider(roomcenter,"floor");
-
-		
+	createEncapCollider(roomcenter,"floor");	
 		
 		
 	}
