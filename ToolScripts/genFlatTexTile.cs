@@ -40,6 +40,11 @@ public class genFlatTexTile : MonoBehaviour {
 	
 	
 	
+	
+		
+		
+		
+	
 	public void updateColors (Color[] colors, Vector3 rayorigin,Vector2 rayPixPos, Vector3 direction, Texture2D currentSideTex, float xmin, float xmax, float ymin, float ymax)
 	{
 						RaycastHit hit = new RaycastHit();

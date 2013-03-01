@@ -164,7 +164,215 @@ public class InGamePythonInterpreter4 : MonoBehaviour
 //		}
 //}
 	
-
+public void iterateColliderSides (GameObject wall)
+	{
+		
+		int widthSegments;
+		int lengthSegments;	
+		GameObject plane;
+		BoxCollider collider;
+		
+	foreach (Transform wallCluster in wall.transform) 
+		{
+			
+			collider = (wallCluster.collider as BoxCollider);
+			
+	 		widthSegments = Mathf.RoundToInt(collider.size.x);	
+			lengthSegments = Mathf.RoundToInt(collider.size.z);	
+			
+			plane = genLowPolyMesh("Top", widthSegments,lengthSegments);
+			plane.transform.position = collider.center + new Vector3(0, collider.size.y/2, 0);
+			
+			
+			
+			widthSegments = Mathf.RoundToInt(collider.size.x);	
+			lengthSegments = Mathf.RoundToInt(collider.size.z);	
+			
+			plane = genLowPolyMesh("Bottom", widthSegments,lengthSegments);
+			plane.transform.position = collider.center - new Vector3(0, collider.size.y/2, 0);
+			
+				
+			widthSegments = Mathf.RoundToInt((collider).size.x);	
+			lengthSegments = Mathf.RoundToInt((collider).size.y);	
+			
+			plane = genLowPolyMesh("Front", widthSegments,lengthSegments);
+			plane.transform.position = collider.center - new Vector3(0,0, collider.size.z/2);
+			
+			
+			
+			widthSegments = Mathf.RoundToInt((collider).size.x);	
+			lengthSegments = Mathf.RoundToInt((collider).size.y);	
+			
+			plane = genLowPolyMesh("Back", widthSegments,lengthSegments);
+			plane.transform.position = collider.center + new Vector3(0,0, collider.size.z/2);
+			
+			
+			
+			
+			widthSegments = Mathf.RoundToInt((collider).size.z);	
+			lengthSegments = Mathf.RoundToInt((collider).size.y);	
+			
+			plane = genLowPolyMesh("Right", widthSegments,lengthSegments);
+			plane.transform.position = collider.center +  new Vector3(collider.size.x/2,0,0);
+			
+			
+			
+			widthSegments = Mathf.RoundToInt((collider).size.z);	
+			lengthSegments = Mathf.RoundToInt((collider).size.y);	
+			
+			plane = genLowPolyMesh("Left", widthSegments,lengthSegments);
+			plane.transform.position = collider.center -  new Vector3(collider.size.x/2,0,0);
+			
+			
+			}
+		
+	}
+	
+	
+	
+	
+	
+	public GameObject genLowPolyMesh (String colSide,int widthSegments,int lengthSegments)
+	{
+		
+			
+		
+		
+		
+		
+			GameObject plane = new GameObject();	
+	
+			 MeshFilter meshFilter = (MeshFilter)plane.AddComponent(typeof(MeshFilter));
+       		 plane.AddComponent(typeof(MeshRenderer));
+			
+			
+			
+			
+		
+			Mesh m = new Mesh();
+            m.name = plane.name;
+ 			
+		
+			float width = widthSegments;
+			float length = lengthSegments;
+			
+            int hCount2 = widthSegments+1;
+            int vCount2 = lengthSegments+1;
+            int numTriangles = widthSegments * lengthSegments * 6;
+            int numVertices = hCount2 * vCount2;
+ 
+            Vector3[] vertices = new Vector3[numVertices];
+            Vector2[] uvs = new Vector2[numVertices];
+            int[] triangles = new int[numTriangles];
+ 
+            int index = 0;
+            float uvFactorX = 1.0f/widthSegments;
+            float uvFactorY = 1.0f/lengthSegments;
+            float scaleX = 1.0f;//width/widthSegments;
+            float scaleY = 1.0f;//length/lengthSegments;
+            for (float y = 0.0f; y < vCount2; y++)
+            {
+                for (float x = 0.0f; x < hCount2; x++)
+                {
+                    if (colSide == "Top") //|| (colSide == "Bottom")
+                    {
+                        vertices[index] = new Vector3(x*scaleX - width/2f, 0.0f, y*scaleY - length/2f);
+                    }
+				
+					else if (colSide == "Bottom")
+                    {
+						
+                        vertices[(numVertices-1)-index] = new Vector3(x*scaleX - width/2f, 0.0f, y*scaleY - length/2f);
+                    }
+				
+				
+				
+				
+                    else if (colSide == "Front")
+                    {
+                        vertices[index] = new Vector3(x*scaleX - width/2f, y*scaleY - length/2f, 0.0f);
+                    }
+					else if (colSide == "Back")
+                    {
+                        vertices[(numVertices-1)-index] = new Vector3(x*scaleX - width/2f, y*scaleY - length/2f, 0.0f);
+                    }
+				
+				
+				
+				
+				
+					else if (colSide == "Right")
+					{
+						vertices[index] = new Vector3(0.0f, y*scaleY - length/2f, x*scaleX - width/2f);
+					}
+                    else if (colSide == "Left")
+					{
+						vertices[(numVertices-1)-index] = new Vector3(0.0f, y*scaleY - length/2f, x*scaleX - width/2f);
+					}
+                    
+					
+				
+				
+					uvs[index++] = new Vector2(x*uvFactorX, y*uvFactorY);
+                }
+            }
+ 
+            
+		if ((colSide == "Left") || (colSide == "Bottom") || (colSide == "Back"))
+		{ 	
+			Debug.Log(index);
+			
+			index = numTriangles-1;
+			
+			for (int y = 0; y < lengthSegments; y++)
+            {
+                for (int x = 0; x < widthSegments; x++)
+                {
+					Debug.Log(index);
+                    triangles[index]   = (y     * hCount2) + x;
+                    triangles[index-1] = ((y+1) * hCount2) + x;
+                    triangles[index-2] = (y     * hCount2) + x + 1;
+ 
+                    triangles[index-3] = ((y+1) * hCount2) + x;
+                    triangles[index-4] = ((y+1) * hCount2) + x + 1;
+                    triangles[index-5] = (y     * hCount2) + x + 1;
+                    index -= 6;
+                }
+            }
+ 	
+		}
+		
+		else{
+			index = 0;
+		 for (int y = 0; y < lengthSegments; y++)
+            {
+                for (int x = 0; x < widthSegments; x++)
+                {
+				
+                    triangles[index]   = (y     * hCount2) + x;
+                    triangles[index+1] = ((y+1) * hCount2) + x;
+                    triangles[index+2] = (y     * hCount2) + x + 1;
+ 
+                    triangles[index+3] = ((y+1) * hCount2) + x;
+                    triangles[index+4] = ((y+1) * hCount2) + x + 1;
+                    triangles[index+5] = (y     * hCount2) + x + 1;
+                    index += 6;
+                }
+            }
+		}
+            m.vertices = vertices;
+            m.uv = uvs;
+            m.triangles = triangles;
+            m.RecalculateNormals();
+ 
+            //AssetDatabase.CreateAsset(m, "Assets/Editor/" + planeAssetName);
+            //AssetDatabase.SaveAssets();
+        
+ 
+        meshFilter.sharedMesh = m;
+        m.RecalculateBounds();
+		return plane;
+}	
 	
 	
 public void clusterTiles(GameObject roomcenter, string wallside)
@@ -487,6 +695,14 @@ foreach (Transform cluster in roomcenter.transform.FindChild(wallside).transform
 	createEncapCollider(roomcenter,"leftwall");
 	createEncapCollider(roomcenter,"rightwall");
 	createEncapCollider(roomcenter,"floor");	
+	
+		
+	iterateColliderSides(roomcenter.transform.FindChild("topwall").gameObject);		
+	iterateColliderSides(roomcenter.transform.FindChild("bottomwall").gameObject);		
+	iterateColliderSides(roomcenter.transform.FindChild("leftwall").gameObject);		
+	iterateColliderSides(roomcenter.transform.FindChild("rightwall").gameObject);		
+	iterateColliderSides(roomcenter.transform.FindChild("floor").gameObject);		
+	
 		
 		
 	}
