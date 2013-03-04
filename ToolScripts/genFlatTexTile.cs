@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.IO;
 using System;
+using System.Runtime.Serialization.Formatters.Binary;	
 
 public class genFlatTexTile : MonoBehaviour {
 	
@@ -11,7 +12,7 @@ public class genFlatTexTile : MonoBehaviour {
 	
 	public List<Texture2D> textures = new List<Texture2D>();
 	
-	
+	public Rect[] atlasUvs;
 	
 	public void Createpreviewfolder()
 	{
@@ -229,14 +230,16 @@ public class genFlatTexTile : MonoBehaviour {
 			
 	public void genTileTextures () {
 	
+		
+		
 	Debug.Log("starting gentile tex");		
 		
 	Createpreviewfolder();	
 	
 	textureAtlas = new Texture2D(512,512);
 		
-	if (!File.Exists(Application.dataPath +"/asset_textures/" +this.name)){	
-		
+	if ((!File.Exists(Application.dataPath +"/asset_textures/" +this.name)) || (!File.Exists(Application.dataPath +"/asset_textures/" +this.name +"_atlas")))
+		{
 		
 	Vector3 direction;	
 		
@@ -283,9 +286,29 @@ public class genFlatTexTile : MonoBehaviour {
 				}			
 		
 	
+	Debug.Log("attemtping to build atlas and return coords");
+			
+	atlasUvs = textureAtlas.PackTextures(textures.ToArray(),0);
+	RectSerializer[] atlasUvs_serialize = new RectSerializer[atlasUvs.Length];
 	
 			
-	textureAtlas.PackTextures(textures.ToArray(),0);
+	for (int i = 0; i < atlasUvs.Length; i++)
+			{
+			Rect uv = atlasUvs[i];
+			
+			RectSerializer newrect = new RectSerializer();
+			newrect.Fill(uv);
+			atlasUvs_serialize[i] = newrect;	
+				
+			}
+			
+	string fileName = Application.dataPath + "/asset_textures/"+this.name + "_atlas";		
+			
+	BinaryFormatter bf = new BinaryFormatter();
+	FileStream fs = new FileStream(fileName,FileMode.Create,FileAccess.Write);
+	bf.Serialize(fs,atlasUvs_serialize);		
+	fs.Close();				
+	
 			
 	byte[] texturetosave = textureAtlas.EncodeToPNG();
 	File.WriteAllBytes(Application.dataPath + "/asset_textures/"+this.name ,texturetosave);		
@@ -304,7 +327,23 @@ public class genFlatTexTile : MonoBehaviour {
 			textureAtlas.LoadImage(reader.ReadBytes((int)reader.BaseStream.Length));
 			}	
 		
+			string fileName = Application.dataPath + "/asset_textures/"+this.name + "_atlas";
+			BinaryFormatter bf = new BinaryFormatter();
+			FileStream fs = new FileStream(fileName,FileMode.Open,FileAccess.Read);
+			RectSerializer[] atlasUvs_serialize = (RectSerializer[])bf.Deserialize(fs);
 			
+			atlasUvs = new Rect[atlasUvs_serialize.Length];
+			for (int i = 0; i < atlasUvs_serialize.Length; i++)
+			{
+				RectSerializer uv = atlasUvs_serialize[i];
+				atlasUvs[i] = uv.Rect2;
+			}
+			
+			fs.Close();
+			
+			//we can repopulate the texture array for each model here if we like, the problem is if we already have the atlas saved out then we don't
+			//regenerate the textures so we never add them to the textures array, theres really no reason, but might be later, we can extract them
+			// from the atlas anyway...
 			
 			
 		}	

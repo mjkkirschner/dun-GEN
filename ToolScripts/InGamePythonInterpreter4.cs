@@ -169,6 +169,8 @@ public void iterateColliderSides (GameObject wall)
 		
 		int widthSegments;
 		int lengthSegments;	
+		float width;
+		float length;
 		GameObject plane;
 		BoxCollider collider;
 		
@@ -177,50 +179,60 @@ public void iterateColliderSides (GameObject wall)
 			
 			collider = (wallCluster.collider as BoxCollider);
 			
+			
+			width = collider.size.x;
+			length = collider.size.z;
 	 		widthSegments = Mathf.RoundToInt(collider.size.x);	
 			lengthSegments = Mathf.RoundToInt(collider.size.z);	
 			
-			plane = genLowPolyMesh("Top", widthSegments,lengthSegments);
+			plane = genLowPolyMesh("Top", widthSegments,lengthSegments,width,length);
 			plane.transform.position = collider.center + new Vector3(0, collider.size.y/2, 0);
 			
 			
-			
+			width = collider.size.x;
+			length = collider.size.z;
 			widthSegments = Mathf.RoundToInt(collider.size.x);	
 			lengthSegments = Mathf.RoundToInt(collider.size.z);	
 			
-			plane = genLowPolyMesh("Bottom", widthSegments,lengthSegments);
+			plane = genLowPolyMesh("Bottom", widthSegments,lengthSegments,width,length);
 			plane.transform.position = collider.center - new Vector3(0, collider.size.y/2, 0);
 			
-				
+			
+			
+			width = collider.size.x;
+			length = collider.size.y;	
 			widthSegments = Mathf.RoundToInt((collider).size.x);	
 			lengthSegments = Mathf.RoundToInt((collider).size.y);	
 			
-			plane = genLowPolyMesh("Front", widthSegments,lengthSegments);
+			plane = genLowPolyMesh("Front", widthSegments,lengthSegments,width,length);
 			plane.transform.position = collider.center - new Vector3(0,0, collider.size.z/2);
 			
 			
-			
+			width = collider.size.x;
+			length = collider.size.y;	
 			widthSegments = Mathf.RoundToInt((collider).size.x);	
 			lengthSegments = Mathf.RoundToInt((collider).size.y);	
 			
-			plane = genLowPolyMesh("Back", widthSegments,lengthSegments);
+			plane = genLowPolyMesh("Back", widthSegments,lengthSegments,width,length);
 			plane.transform.position = collider.center + new Vector3(0,0, collider.size.z/2);
 			
 			
 			
-			
+			width = collider.size.z;
+			length = collider.size.y;	
 			widthSegments = Mathf.RoundToInt((collider).size.z);	
 			lengthSegments = Mathf.RoundToInt((collider).size.y);	
 			
-			plane = genLowPolyMesh("Right", widthSegments,lengthSegments);
+			plane = genLowPolyMesh("Right", widthSegments,lengthSegments,width,length);
 			plane.transform.position = collider.center +  new Vector3(collider.size.x/2,0,0);
 			
 			
-			
+			width = collider.size.z;
+			length = collider.size.y;	
 			widthSegments = Mathf.RoundToInt((collider).size.z);	
 			lengthSegments = Mathf.RoundToInt((collider).size.y);	
 			
-			plane = genLowPolyMesh("Left", widthSegments,lengthSegments);
+			plane = genLowPolyMesh("Left", widthSegments,lengthSegments,width,length);
 			plane.transform.position = collider.center -  new Vector3(collider.size.x/2,0,0);
 			
 			
@@ -232,7 +244,7 @@ public void iterateColliderSides (GameObject wall)
 	
 	
 	
-	public GameObject genLowPolyMesh (String colSide,int widthSegments,int lengthSegments)
+	public GameObject genLowPolyMesh (String colSide,int widthSegments,int lengthSegments,float width,float length)
 	{
 		
 			
@@ -253,8 +265,8 @@ public void iterateColliderSides (GameObject wall)
             m.name = plane.name;
  			
 		
-			float width = widthSegments;
-			float length = lengthSegments;
+			//float width = widthSegments;
+			//float length = lengthSegments;
 			
             int hCount2 = widthSegments+1;
             int vCount2 = lengthSegments+1;
@@ -268,8 +280,8 @@ public void iterateColliderSides (GameObject wall)
             int index = 0;
             float uvFactorX = 1.0f/widthSegments;
             float uvFactorY = 1.0f/lengthSegments;
-            float scaleX = 1.0f;//width/widthSegments;
-            float scaleY = 1.0f;//length/lengthSegments;
+            float scaleX = width/widthSegments;
+            float scaleY = length/lengthSegments;
             for (float y = 0.0f; y < vCount2; y++)
             {
                 for (float x = 0.0f; x < hCount2; x++)
@@ -320,7 +332,7 @@ public void iterateColliderSides (GameObject wall)
             
 		if ((colSide == "Left") || (colSide == "Bottom") || (colSide == "Back"))
 		{ 	
-			Debug.Log(index);
+			
 			
 			index = numTriangles-1;
 			
@@ -328,7 +340,7 @@ public void iterateColliderSides (GameObject wall)
             {
                 for (int x = 0; x < widthSegments; x++)
                 {
-					Debug.Log(index);
+					
                     triangles[index]   = (y     * hCount2) + x;
                     triangles[index-1] = ((y+1) * hCount2) + x;
                     triangles[index-2] = (y     * hCount2) + x + 1;

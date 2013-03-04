@@ -173,14 +173,18 @@ public class Roomcomponent : MonoBehaviour
 		foreach (GameObject model in modelarray)
 		{
 			
-			if (model.GetComponent<genFlatTexTile>() == null)
+			if (model.GetComponent<genFlatTexTile>() == null) 
 			{
 			model.AddComponent<genFlatTexTile>();
 			model.GetComponent<genFlatTexTile>().genTileTextures();
 			}
 			
-			
-		}
+			else if((model.GetComponent<genFlatTexTile>().atlasUvs.Length == 0) || (model.GetComponent<genFlatTexTile>().textures.Count == 0))
+			{
+				Debug.Log("regenerating texes");
+			model.GetComponent<genFlatTexTile>().genTileTextures();	
+			}
+		}	
 		
 			}
 
