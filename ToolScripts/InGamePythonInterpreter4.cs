@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System;
+using System.Linq;
 //using IronPython;	
 using System.Runtime.Serialization.Formatters.Binary;	
 using System.IO;	
@@ -479,8 +480,35 @@ public void clusterTiles(GameObject roomcenter, string wallside)
 	}
 	
 	
+public void SortXYZ (GameObject roomcenter,string wallside) 	
+	{
+	// get all the cluters in the wall	
+	foreach (Transform cluster in roomcenter.transform.FindChild(wallside).transform)
+		{
+			//get each child from cluster and add to a list of children
+		List<GameObject> children = new List<GameObject>();
+		foreach (Transform child in cluster)
+			{
+				Debug.Log("test");
+				
+				
+				
+				Debug.Log(roomcenter.transform.InverseTransformPoint(child.position));
+				
+				Debug.Log(child.position);
+			}	
+		
+		
+		
+		}
+		
+		
 	
 	
+	//List<Order> SortedList = objListOrder.OrderBy(o=>o.OrderDate).ToList();
+	
+	
+	}
 	
 	
 public void createEncapCollider (GameObject roomcenter, string wallside) 
@@ -715,6 +743,7 @@ foreach (Transform cluster in roomcenter.transform.FindChild(wallside).transform
 	iterateColliderSides(roomcenter.transform.FindChild("rightwall").gameObject);		
 	iterateColliderSides(roomcenter.transform.FindChild("floor").gameObject);		
 	
+	//SortXYZ(roomcenter,"topwall");	
 		
 		
 	}

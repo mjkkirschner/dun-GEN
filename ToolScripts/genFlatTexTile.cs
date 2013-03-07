@@ -269,7 +269,11 @@ public class genFlatTexTile : MonoBehaviour {
 		
 	
 		//need to call this 6 times with 6 directions
-
+		
+		// The order of textures generated is 
+		// right,left, top,bottom, back,front	
+			
+			
 
 	for (int x = -1; x <= 1; x += 2){ 	
 	

@@ -47,7 +47,7 @@ public class Roomcomponent : MonoBehaviour
 	foreach (GameObject model in modelarray){
 		Texture2D texturetoload = new Texture2D(100,100);	
 		string name = model.name;
-		 using (BinaryReader reader = new BinaryReader(File.Open(Application.dataPath +"/asset_previews/" + name, FileMode.Open)))
+		 using (BinaryReader reader = new BinaryReader(File.Open(Application.dataPath +"/asset_textures/" + name, FileMode.Open)))
 			{
 			texturetoload.LoadImage(reader.ReadBytes((int)reader.BaseStream.Length));
 			}	
@@ -88,10 +88,11 @@ public class Roomcomponent : MonoBehaviour
 	
 	IEnumerator generatepreviews(GameObject testcam){
 				
+				Debug.Log("inside coroutine");
 				
 				yield return new WaitForEndOfFrame();
 			
-				
+				Debug.Log("inside coroutine");
 				testcam.AddComponent<Camera>();
 				RenderTexture preview = new RenderTexture(100,100,24);
 				testcam.camera.targetTexture = preview;	
@@ -164,11 +165,11 @@ public class Roomcomponent : MonoBehaviour
 			{
 			modelarray.AddRange(GameObject.Find("Interpreter").GetComponent<InGamePythonInterpreter4>().modelarray);
 			}
-		Createpreviewfolder();
+		//Createpreviewfolder();
 		
-		GameObject testcam = new GameObject();
 		
-		StartCoroutine(generatepreviews(testcam));
+		
+		
 		
 		foreach (GameObject model in modelarray)
 		{
@@ -185,6 +186,8 @@ public class Roomcomponent : MonoBehaviour
 			model.GetComponent<genFlatTexTile>().genTileTextures();	
 			}
 		}	
+		
+		UpdatePreviews();
 		
 			}
 

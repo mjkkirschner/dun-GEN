@@ -128,7 +128,10 @@ public class Roomcomponent_editor : Editor
 			interperter.wallmasterlist = interperter.wallmasterlist.Except((target as  Roomcomponent).wallstobuild).ToList();
 			(target as  Roomcomponent).wallstobuild.Clear();
 			
+			// need to reset the rotation of roomcomp.gamobject to 0,0,0
 			
+			(target as Roomcomponent).gameObject.transform.eulerAngles = new Vector3(0,0,0);
+				
 			// after restarting unity room.walls is being lost.
 			interperter.parseroom2((target as Roomcomponent).room,interperter.heighttable,(target as Roomcomponent).modelarray,(target as Roomcomponent).gameObject);
 			
