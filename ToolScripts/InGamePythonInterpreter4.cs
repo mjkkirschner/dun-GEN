@@ -489,19 +489,44 @@ public void SortXYZ (GameObject roomcenter,string wallside)
 		List<GameObject> children = new List<GameObject>();
 		foreach (Transform child in cluster)
 			{
-				Debug.Log("test");
+				
+				// add each child to a list
+				children.Add(child.gameObject);
 				
 				
 				
-				Debug.Log(roomcenter.transform.InverseTransformPoint(child.position));
-				
-				Debug.Log(child.position);
 			}	
-		
+			// sort this list by x,y,z
+			List<GameObject> sortedChildren  = children.OrderBy (child => child.transform.position.x)
+															.ThenBy(child => child.transform.position.y)
+																	.ThenBy(child => child.transform.position.z).ToList();
+			
+			
+			
+			// get all tiles in relation to the bottom left corner... ***TEST IF THIS WORKS FOR ALL WALLS, not just top***
+			cluster.gameObject.AddComponent<clusterComponet>();
+			foreach (GameObject sortedchild in sortedChildren)
+			{
+				
+				Vector3 key = sortedchild.transform.localPosition - sortedChildren[0].transform.localPosition;
+				
+				cluster.gameObject.GetComponent<clusterComponet>().tilemap.Add(key, sortedchild.name.Remove(sortedchild.name.Length-7) + "|" + (sortedchild.transform.localEulerAngles.ToString()));
+			}
+			
+			
+			foreach(KeyValuePair<Vector3,String> entry in cluster.gameObject.GetComponent<clusterComponet>().tilemap)
+			{
+    			Debug.Log(entry.Value);
+				// do something with entry.Value or entry.Key
+			}
+				
+						
+			
 		
 		
 		}
-		
+		 
+  
 		
 	
 	
@@ -722,7 +747,7 @@ foreach (Transform cluster in roomcenter.transform.FindChild(wallside).transform
 		}
 
 		
-	
+	//this creates sub clusters that group the walls 
 
 	clusterTiles(roomcenter,"topwall");
 	clusterTiles(roomcenter,"bottomwall");
@@ -730,6 +755,9 @@ foreach (Transform cluster in roomcenter.transform.FindChild(wallside).transform
 	clusterTiles(roomcenter,"rightwall");
 	clusterTiles(roomcenter,"floor");	
 	
+		
+	//this creates colliders around entire walls	
+		
 	createEncapCollider(roomcenter,"topwall");
 	createEncapCollider(roomcenter,"bottomwall");
 	createEncapCollider(roomcenter,"leftwall");
@@ -737,14 +765,31 @@ foreach (Transform cluster in roomcenter.transform.FindChild(wallside).transform
 	createEncapCollider(roomcenter,"floor");	
 	
 		
+		
+		
+	// this creates a dictionary of the tiles relative to the bottom left corner of the wall	
+	// it may be necessary to do this before generating the tiles, then inside of the generation method we can grab the correct tile.
+	// lets test that first.	
+	SortXYZ(roomcenter,"topwall");		
+	SortXYZ(roomcenter,"bottomwall");
+	SortXYZ(roomcenter,"leftwall");	
+	SortXYZ(roomcenter,"rightwall");
+	SortXYZ(roomcenter,"bottomwall");	
+		
+		
+		
+	// this iterates each side of each wall and then creates low poly planes on each side.	
+		
 	iterateColliderSides(roomcenter.transform.FindChild("topwall").gameObject);		
 	iterateColliderSides(roomcenter.transform.FindChild("bottomwall").gameObject);		
 	iterateColliderSides(roomcenter.transform.FindChild("leftwall").gameObject);		
 	iterateColliderSides(roomcenter.transform.FindChild("rightwall").gameObject);		
 	iterateColliderSides(roomcenter.transform.FindChild("floor").gameObject);		
 	
-	//SortXYZ(roomcenter,"topwall");	
 		
+	
+	
+	
 		
 	}
 	
@@ -771,8 +816,8 @@ foreach (Transform cluster in roomcenter.transform.FindChild(wallside).transform
 		bottomwall.transform.parent = newroomcenter.transform;
 		
 		topwall.transform.parent = newroomcenter.transform;
-		topwall.layer = 2;
-		topwall.AddComponent<genFlatTexWall>();
+		//topwall.layer = 2;
+		//topwall.AddComponent<genFlatTexWall>();
 		
 		floor.transform.parent = newroomcenter.transform;
 		

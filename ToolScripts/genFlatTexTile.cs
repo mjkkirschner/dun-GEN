@@ -14,6 +14,13 @@ public class genFlatTexTile : MonoBehaviour {
 	
 	public Rect[] atlasUvs;
 	
+	
+	public Dictionary<string, Rect> faceDictionary = new Dictionary<string, Rect>();
+		
+	public Dictionary<string, float> rotationDictionary = new Dictionary<string, float>();
+		
+		
+	
 	public void Createpreviewfolder()
 	{
 		string path = Application.dataPath + "/asset_textures";
@@ -352,6 +359,42 @@ public class genFlatTexTile : MonoBehaviour {
 			
 		}	
 		
+	
+		
+		//at this point the atlas should be set full of rectangles and the textures all generated.  The Tile was instantiated long ago.
+		
+		faceDictionary.Clear();
+		rotationDictionary.Clear();
+		
+		
+		faceDictionary.Add("right",atlasUvs[0]);
+		faceDictionary.Add("left",atlasUvs[1]);	
+		faceDictionary.Add("top",atlasUvs[2]);	
+		faceDictionary.Add("bottom",atlasUvs[3]);
+		faceDictionary.Add("back",atlasUvs[4]);
+		faceDictionary.Add("front",atlasUvs[5]);
+		
+		rotationDictionary.Add("right",this.gameObject.transform.localEulerAngles.x);
+		rotationDictionary.Add("left",this.gameObject.transform.localEulerAngles.x);
+		rotationDictionary.Add("top",this.gameObject.transform.localEulerAngles.y);
+		rotationDictionary.Add("bottom",this.gameObject.transform.localEulerAngles.y);
+		rotationDictionary.Add("back",this.gameObject.transform.localEulerAngles.z);
+		rotationDictionary.Add("front",this.gameObject.transform.localEulerAngles.z);
+		
+		//lets ignore rotation for now BUT instead of this orientation dictionary, we can just alter the uvs rectangles of the 
+		// specific face based on the rotation and store that altered uv in the facedictionary, that way later we'll just get the correct
+		// rotation. if we wanted to get a 90 left rotation we would set position to be the lower right and go up towards upper left (maybe)
+		// I'm not sure if that would work, or if we DO need to do what we're doing...
+		//if thats the case then when we actually create the planes we need to shift the vertexes around a certain number of times based on the rotation.
+		
+		
+		
+		// using the order of segment we are at, we can grab the correct gameobject, then grab the correct face based on the collider side we are currently in.
+		
+		
+		// The order of textures generated is 
+		// right,left, top,bottom, back,front	
+			
 		
 	
 	}
