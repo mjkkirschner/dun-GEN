@@ -386,6 +386,94 @@ public void iterateColliderSides (GameObject wall)
         m.RecalculateBounds();
 		return plane;
 }	
+
+	
+public void clusterTiles_findCuts (GameObject roomcenter, string wallside)
+		
+	{
+		
+	GameObject parent = roomcenter.transform.FindChild(wallside).gameObject;	
+	
+	List<GameObject> clustersAddToWall = new List<GameObject>();
+		
+	
+		// for each cluster inside of the wall
+	foreach (Transform cluster in parent.transform)
+		{
+			
+		List<GameObject> clustertiles = new List<GameObject>();	
+			// for each child of each cluster
+			foreach ( Transform tile in cluster)
+			{
+  		
+			clustertiles.Add(tile.gameObject);
+				
+			
+			}
+			
+			
+			int maxRowSize = 0 ;
+			
+			foreach ( GameObject tile in clustertiles)
+			{
+  			
+			
+						// select all the tiles with same y value
+			List<GameObject> neighborsSameY = clustertiles.Where(o => Mathf.Abs(o.transform.position.y - tile.transform.position.y) < .3).ToList(); 
+				
+			if (neighborsSameY.Count > maxRowSize)
+				{
+					maxRowSize = neighborsSameY.Count;
+					
+				}
+				//this is a first loop where we calculate the largest row
+				
+			}
+			
+			
+			
+			
+			foreach (GameObject tile in clustertiles)
+			{
+  			
+			
+						// select all the tiles with same y value
+			List<GameObject> neighborsSameY2 = clustertiles.Where(o => Mathf.Abs(o.transform.position.y - tile.transform.position.y) < .3).ToList(); 
+				 
+			if (neighborsSameY2.Count < maxRowSize)
+				{
+				
+					
+				GameObject newcluster = new GameObject("cluster_");
+				tile.transform.parent = newcluster.transform;
+				
+				clustersAddToWall.Add(newcluster);	
+					
+				
+					
+				
+					
+				}	
+				
+			
+			
+			}
+			
+			
+			
+			
+			
+			
+		}		
+		
+		foreach (GameObject floatingCluster in clustersAddToWall)
+			{
+		floatingCluster.transform.parent = roomcenter.transform.FindChild(wallside).transform;
+			}
+		
+	}
+	
+	
 	
 	
 public void clusterTiles(GameObject roomcenter, string wallside)
@@ -505,6 +593,8 @@ public void SortXYZ (GameObject roomcenter,string wallside)
 			
 			// get all tiles in relation to the bottom left corner... ***TEST IF THIS WORKS FOR ALL WALLS, not just top***
 			cluster.gameObject.AddComponent<clusterComponet>();
+			cluster.GetComponent<clusterComponet>().tilemap.Clear();
+			
 			foreach (GameObject sortedchild in sortedChildren)
 			{
 				
@@ -755,6 +845,15 @@ foreach (Transform cluster in roomcenter.transform.FindChild(wallside).transform
 	clusterTiles(roomcenter,"rightwall");
 	clusterTiles(roomcenter,"floor");	
 	
+		
+		
+	clusterTiles_findCuts(roomcenter,"topwall");
+	clusterTiles_findCuts(roomcenter,"bottomwall");
+	clusterTiles_findCuts(roomcenter,"leftwall");
+	clusterTiles_findCuts(roomcenter,"rightwall");
+	clusterTiles_findCuts(roomcenter,"floor");		
+		
+		
 		
 	//this creates colliders around entire walls	
 		
