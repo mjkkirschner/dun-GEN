@@ -366,6 +366,8 @@ public class genFlatTexTile : MonoBehaviour {
 		faceDictionary.Clear();
 		rotationDictionary.Clear();
 		
+		// we may want to make this conditional upon the current rotation, so if we are rotated a certain way then we add 
+		// the top face to whatever is actually on top, we can also just do this at the time we get the textures
 		
 		faceDictionary.Add("right",atlasUvs[0]);
 		faceDictionary.Add("left",atlasUvs[1]);	

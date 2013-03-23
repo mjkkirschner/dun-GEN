@@ -186,7 +186,7 @@ public void iterateColliderSides (GameObject wall)
 	 		widthSegments = Mathf.RoundToInt(collider.size.x);	
 			lengthSegments = Mathf.RoundToInt(collider.size.z);	
 			
-			plane = genLowPolyMesh("Top", widthSegments,lengthSegments,width,length);
+			plane = genLowPolyMesh("Top", widthSegments,lengthSegments,width,length,wallCluster.gameObject);
 			plane.transform.position = collider.center + new Vector3(0, collider.size.y/2, 0);
 			
 			
@@ -195,7 +195,7 @@ public void iterateColliderSides (GameObject wall)
 			widthSegments = Mathf.RoundToInt(collider.size.x);	
 			lengthSegments = Mathf.RoundToInt(collider.size.z);	
 			
-			plane = genLowPolyMesh("Bottom", widthSegments,lengthSegments,width,length);
+			plane = genLowPolyMesh("Bottom", widthSegments,lengthSegments,width,length,wallCluster.gameObject);
 			plane.transform.position = collider.center - new Vector3(0, collider.size.y/2, 0);
 			
 			
@@ -205,7 +205,7 @@ public void iterateColliderSides (GameObject wall)
 			widthSegments = Mathf.RoundToInt((collider).size.x);	
 			lengthSegments = Mathf.RoundToInt((collider).size.y);	
 			
-			plane = genLowPolyMesh("Front", widthSegments,lengthSegments,width,length);
+			plane = genLowPolyMesh("Front", widthSegments,lengthSegments,width,length,wallCluster.gameObject);
 			plane.transform.position = collider.center - new Vector3(0,0, collider.size.z/2);
 			
 			
@@ -214,7 +214,7 @@ public void iterateColliderSides (GameObject wall)
 			widthSegments = Mathf.RoundToInt((collider).size.x);	
 			lengthSegments = Mathf.RoundToInt((collider).size.y);	
 			
-			plane = genLowPolyMesh("Back", widthSegments,lengthSegments,width,length);
+			plane = genLowPolyMesh("Back", widthSegments,lengthSegments,width,length,wallCluster.gameObject);
 			plane.transform.position = collider.center + new Vector3(0,0, collider.size.z/2);
 			
 			
@@ -224,7 +224,7 @@ public void iterateColliderSides (GameObject wall)
 			widthSegments = Mathf.RoundToInt((collider).size.z);	
 			lengthSegments = Mathf.RoundToInt((collider).size.y);	
 			
-			plane = genLowPolyMesh("Right", widthSegments,lengthSegments,width,length);
+			plane = genLowPolyMesh("Right", widthSegments,lengthSegments,width,length,wallCluster.gameObject);
 			plane.transform.position = collider.center +  new Vector3(collider.size.x/2,0,0);
 			
 			
@@ -233,7 +233,7 @@ public void iterateColliderSides (GameObject wall)
 			widthSegments = Mathf.RoundToInt((collider).size.z);	
 			lengthSegments = Mathf.RoundToInt((collider).size.y);	
 			
-			plane = genLowPolyMesh("Left", widthSegments,lengthSegments,width,length);
+			plane = genLowPolyMesh("Left", widthSegments,lengthSegments,width,length,wallCluster.gameObject);
 			plane.transform.position = collider.center -  new Vector3(collider.size.x/2,0,0);
 			
 			
@@ -245,14 +245,13 @@ public void iterateColliderSides (GameObject wall)
 	
 	
 	
-	public GameObject genLowPolyMesh (String colSide,int widthSegments,int lengthSegments,float width,float length)
+	public GameObject genLowPolyMesh (String colSide,int widthSegments,int lengthSegments,float width,float length,GameObject ParentCluster)
 	{
 		
 			
 		
-		
-		
-		
+			
+			Dictionary<Vector3,string> tilemap = ParentCluster.GetComponent<clusterComponet>().tilemap;
 			GameObject plane = new GameObject();	
 	
 			 MeshFilter meshFilter = (MeshFilter)plane.AddComponent(typeof(MeshFilter));
@@ -284,19 +283,27 @@ public void iterateColliderSides (GameObject wall)
             float scaleX = width/widthSegments;
             float scaleY = length/lengthSegments;
             for (float y = 0.0f; y < vCount2; y++)
-            {
+            {	
                 for (float x = 0.0f; x < hCount2; x++)
-                {
+                {	
+				
+					float minDistance = Mathf.Infinity;
+					GameObject closetObj = null;
                     if (colSide == "Top") //|| (colSide == "Bottom")
                     {
                         vertices[index] = new Vector3(x*scaleX - width/2f, 0.0f, y*scaleY - length/2f);
-                    }
+						
+						
+					}
 				
 					else if (colSide == "Bottom")
                     {
 						
                         vertices[(numVertices-1)-index] = new Vector3(x*scaleX - width/2f, 0.0f, y*scaleY - length/2f);
-                    }
+                   
+					
+				
+					}
 				
 				
 				
@@ -304,11 +311,18 @@ public void iterateColliderSides (GameObject wall)
                     else if (colSide == "Front")
                     {
                         vertices[index] = new Vector3(x*scaleX - width/2f, y*scaleY - length/2f, 0.0f);
-                    }
+                    	
+						
+				
+				
+					}
 					else if (colSide == "Back")
                     {
                         vertices[(numVertices-1)-index] = new Vector3(x*scaleX - width/2f, y*scaleY - length/2f, 0.0f);
-                    }
+                    
+					
+								
+					}
 				
 				
 				
@@ -317,25 +331,38 @@ public void iterateColliderSides (GameObject wall)
 					else if (colSide == "Right")
 					{
 						vertices[index] = new Vector3(0.0f, y*scaleY - length/2f, x*scaleX - width/2f);
+					
+						
+				
 					}
                     else if (colSide == "Left")
-					{
+					
+				{
 						vertices[(numVertices-1)-index] = new Vector3(0.0f, y*scaleY - length/2f, x*scaleX - width/2f);
+				
+				
+				
 					}
                     
 					
-				
-				
+					Debug.Log(closetObj);
+					
+					
 					uvs[index++] = new Vector2(x*uvFactorX, y*uvFactorY);
                 }
             }
  
-            
+		
+		
+		
+		List<Vector3> currentVerts = new List<Vector3>();
+		
 		if ((colSide == "Left") || (colSide == "Bottom") || (colSide == "Back"))
 		{ 	
 			
 			
 			index = numTriangles-1;
+			
 			
 			for (int y = 0; y < lengthSegments; y++)
             {
@@ -349,8 +376,46 @@ public void iterateColliderSides (GameObject wall)
                     triangles[index-3] = ((y+1) * hCount2) + x;
                     triangles[index-4] = ((y+1) * hCount2) + x + 1;
                     triangles[index-5] = (y     * hCount2) + x + 1;
-                    index -= 6;
-                }
+                    
+					currentVerts.Add(vertices[triangles[index]]);
+					currentVerts.Add(vertices[triangles[index-1]]);
+					currentVerts.Add(vertices[triangles[index-2]]);
+					currentVerts.Add(vertices[triangles[index-3]]);
+					currentVerts.Add(vertices[triangles[index-4]]);
+					currentVerts.Add(vertices[triangles[index-5]]);
+					
+					
+					index -= 6;
+					
+					
+					
+               Vector3 vertexCentroid = new Vector3(0,0,0);
+			
+		GameObject tempParent = new GameObject("temp offset");
+		tempParent.transform.position = ParentCluster.GetComponent<BoxCollider>().center;	
+			
+		
+		
+		
+		foreach (Vector3 vertex in currentVerts)
+		{
+		Vector3 vertexmoved = tempParent.transform.TransformPoint(vertex);
+		vertexCentroid += vertexmoved;
+			
+		}
+			vertexCentroid = (vertexCentroid/currentVerts.Count);
+			Debug.Log(vertexCentroid);
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				}
             }
  	
 		}
@@ -369,10 +434,49 @@ public void iterateColliderSides (GameObject wall)
                     triangles[index+3] = ((y+1) * hCount2) + x;
                     triangles[index+4] = ((y+1) * hCount2) + x + 1;
                     triangles[index+5] = (y     * hCount2) + x + 1;
-                    index += 6;
-                }
+                    
+					currentVerts.Add(vertices[triangles[index]]);
+					currentVerts.Add(vertices[triangles[index+1]]);
+					currentVerts.Add(vertices[triangles[index+2]]);
+					currentVerts.Add(vertices[triangles[index+3]]);
+					currentVerts.Add(vertices[triangles[index+4]]);
+					currentVerts.Add(vertices[triangles[index+5]]);
+					
+					
+					
+					index += 6;
+                
+				
+				Vector3 vertexCentroid = new Vector3(0,0,0);
+			
+		GameObject tempParent = new GameObject("temp offset");
+		tempParent.transform.position = ParentCluster.GetComponent<BoxCollider>().center;	
+			
+		
+		
+		
+		foreach (Vector3 vertex in currentVerts)
+		{
+		Vector3 vertexmoved = tempParent.transform.TransformPoint(vertex);
+		vertexCentroid += vertexmoved;
+			
+		}
+			vertexCentroid = (vertexCentroid/currentVerts.Count);
+			Debug.Log(vertexCentroid);
+				
+				
+				
+				
+				
+				
+				
+				
+				}
             }
 		}
+			
+		
+		
             m.vertices = vertices;
             m.uv = uvs;
             m.triangles = triangles;
@@ -448,9 +552,6 @@ public void clusterTiles_findCuts (GameObject roomcenter, string wallside)
 				tile.transform.parent = newcluster.transform;
 				
 				clustersAddToWall.Add(newcluster);	
-					
-				
-					
 				
 					
 				}	
@@ -459,11 +560,7 @@ public void clusterTiles_findCuts (GameObject roomcenter, string wallside)
 			
 			}
 			
-			
-			
-			
-			
-			
+	
 		}		
 		
 		foreach (GameObject floatingCluster in clustersAddToWall)
@@ -868,12 +965,12 @@ foreach (Transform cluster in roomcenter.transform.FindChild(wallside).transform
 		
 	// this creates a dictionary of the tiles relative to the bottom left corner of the wall	
 	// it may be necessary to do this before generating the tiles, then inside of the generation method we can grab the correct tile.
-	// lets test that first.	
+	// lets test that first...... this method needs to be tested for working with more than just the topwall!!!!!	
 	SortXYZ(roomcenter,"topwall");		
 	SortXYZ(roomcenter,"bottomwall");
 	SortXYZ(roomcenter,"leftwall");	
 	SortXYZ(roomcenter,"rightwall");
-	SortXYZ(roomcenter,"bottomwall");	
+	
 		
 		
 		
@@ -883,8 +980,8 @@ foreach (Transform cluster in roomcenter.transform.FindChild(wallside).transform
 	iterateColliderSides(roomcenter.transform.FindChild("bottomwall").gameObject);		
 	iterateColliderSides(roomcenter.transform.FindChild("leftwall").gameObject);		
 	iterateColliderSides(roomcenter.transform.FindChild("rightwall").gameObject);		
-	iterateColliderSides(roomcenter.transform.FindChild("floor").gameObject);		
-	
+	//iterateColliderSides(roomcenter.transform.FindChild("floor").gameObject);		
+	//temporarily turn off the floor since we are not sorting it and creating lookup texture dictionaries for it yet... and cluster comps etc.
 		
 	
 	
