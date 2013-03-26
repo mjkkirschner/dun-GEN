@@ -298,8 +298,10 @@ public void iterateColliderSides (GameObject wall)
             int hCount2 = widthSegments+1;
             int vCount2 = lengthSegments+1;
             int numTriangles = widthSegments * lengthSegments * 6;
-            int numVertices = hCount2 * vCount2;
- 
+            //int numVertices = hCount2 * vCount2;
+		
+			int numVertices = (widthSegments*lengthSegments) * 4;
+ 			
             Vector3[] vertices = new Vector3[numVertices];
             Vector2[] uvs = new Vector2[numVertices];
             int[] triangles = new int[numTriangles];
@@ -310,17 +312,21 @@ public void iterateColliderSides (GameObject wall)
             float scaleX = width/widthSegments;
             float scaleY = length/lengthSegments;
 			int uvindex  = 0;
-            for (float y = 0.0f; y < vCount2; y++)
+            for (float y = 0.0f; y < lengthSegments; y++)
             {	
-                for (float x = 0.0f; x < hCount2; x++)
+                for (float x = 0.0f; x < widthSegments; x++)
                 {	
 				
 					
 					
-                    if (colSide == "Top") //|| (colSide == "Bottom")
-                    {
+                    if (colSide == "Top")
+                    {	
+						// testing out new generation method//
                         vertices[index] = new Vector3(x*scaleX - width/2f, 0.0f, y*scaleY - length/2f);
-						
+						vertices[index+1] = new Vector3((x+1)*scaleX - width/2f, 0.0f, y*scaleY - length/2f);	
+						vertices[index+2] = new Vector3(x*scaleX - width/2f, 0.0f, (y+1)*scaleY - length/2f);
+						vertices[index+3] = new Vector3((x+1)*scaleX - width/2f, 0.0f, (y+1)*scaleY - length/2f);
+					
 						
 					}
 				
@@ -328,7 +334,9 @@ public void iterateColliderSides (GameObject wall)
                     {
 						
                         vertices[(numVertices-1)-index] = new Vector3(x*scaleX - width/2f, 0.0f, y*scaleY - length/2f);
-                   
+                   		vertices[(numVertices-1)-(index+1)] = new Vector3((x+1)*scaleX - width/2f, 0.0f, y*scaleY - length/2f);
+						vertices[(numVertices-1)-(index+2)] = new Vector3(x*scaleX - width/2f, 0.0f, (y+1)*scaleY - length/2f);
+						vertices[(numVertices-1)-(index+3)] = new Vector3((x+1)*scaleX - width/2f, 0.0f, (y+1)*scaleY - length/2f);
 					
 				
 					}
@@ -339,16 +347,17 @@ public void iterateColliderSides (GameObject wall)
                     else if (colSide == "Front")
                     {
                         vertices[index] = new Vector3(x*scaleX - width/2f, y*scaleY - length/2f, 0.0f);
-                    	
-						
-				
+                    	vertices[index+1] = new Vector3((x+1)*scaleX - width/2f, y*scaleY - length/2f, 0.0f);
+						vertices[index+2] = new Vector3(x*scaleX - width/2f, (y+1)*scaleY - length/2f, 0.0f);
+						vertices[index+3] = new Vector3((x+1)*scaleX - width/2f, (y+1)*scaleY - length/2f, 0.0f);
 				
 					}
 					else if (colSide == "Back")
                     {
                         vertices[(numVertices-1)-index] = new Vector3(x*scaleX - width/2f, y*scaleY - length/2f, 0.0f);
-                    
-					
+                    	vertices[(numVertices-1)-(index+1)] = new Vector3((x+1)*scaleX - width/2f, y*scaleY - length/2f, 0.0f);
+						vertices[(numVertices-1)-(index+2)] = new Vector3(x*scaleX - width/2f, (y+1)*scaleY - length/2f, 0.0f);
+						vertices[(numVertices-1)-(index+3)] = new Vector3((x+1)*scaleX - width/2f, (y+1)*scaleY - length/2f, 0.0f);
 								
 					}
 				
@@ -359,14 +368,23 @@ public void iterateColliderSides (GameObject wall)
 					else if (colSide == "Right")
 					{
 						vertices[index] = new Vector3(0.0f, y*scaleY - length/2f, x*scaleX - width/2f);
+						vertices[index+1] = new Vector3(0.0f, (y)*scaleY - length/2f, (x+1)*scaleX - width/2f);
+						vertices[index+2] = new Vector3(0.0f, (y+1)*scaleY - length/2f, (x)*scaleX - width/2f);
+						vertices[index+3] = new Vector3(0.0f, (y+1)*scaleY - length/2f, (x+1)*scaleX - width/2f);
 					
-						
-				
+					
+					
+					
+					
 					}
                     else if (colSide == "Left")
 					
 				{
 						vertices[(numVertices-1)-index] = new Vector3(0.0f, y*scaleY - length/2f, x*scaleX - width/2f);
+						vertices[(numVertices-1)-(index+1)] = new Vector3(0.0f, (y)*scaleY - length/2f, (x+1)*scaleX - width/2f);
+						vertices[(numVertices-1)-(index+2)] = new Vector3(0.0f, (y+1)*scaleY - length/2f, (x)*scaleX - width/2f);	
+						vertices[(numVertices-1)-(index+3)] = new Vector3(0.0f, (y+1)*scaleY - length/2f, (x+1)*scaleX - width/2f);
+					
 				
 				
 				
@@ -374,11 +392,21 @@ public void iterateColliderSides (GameObject wall)
                     
 					
 					
-					index++;
+					index += 4;
+					Debug.Log("verts");
+					Debug.Log(index);
 					//uvs[index++] = new Vector2(x*uvFactorX, y*uvFactorY);
                 }
             }
- 
+ 		
+		
+//		foreach (Vector3 vert in vertices)
+//			{
+//				GameObject newvert = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+//				newvert.transform.localScale = new Vector3(.1f,.1f,.1f);
+//				newvert.transform.position = vert;
+//			}
+//		
 		
 		// create a new list to hold current verts
 		
@@ -396,14 +424,24 @@ public void iterateColliderSides (GameObject wall)
                 for (int x = 0; x < widthSegments; x++)
                 {
 					
-                    triangles[index]   = (y     * hCount2) + x;
-                    triangles[index-1] = ((y+1) * hCount2) + x;
-                    triangles[index-2] = (y     * hCount2) + x + 1;
+ 					triangles[index]   = ((y*4)     * (hCount2-1)) + x*4;
+                    triangles[index-1] = ((y*4) * (hCount2-1))+2 + x*4;
+                    triangles[index-2] = ((y*4)     * (hCount2-1)) + x*4 + 1;
  
-                    triangles[index-3] = ((y+1) * hCount2) + x;
-                    triangles[index-4] = ((y+1) * hCount2) + x + 1;
-                    triangles[index-5] = (y     * hCount2) + x + 1;
+                    triangles[index-3] = ((y*4) * (hCount2-1))+2 + x*4;
+                    triangles[index-4] = ((y*4) * (hCount2-1))+2 + x*4 + 1;
+                    triangles[index-5] = ((y*4)     * (hCount2-1)) + x*4 + 1;
                     
+					Debug.Log(((y*4)     * (hCount2-1)) + x*4);
+                    Debug.Log(((y*4) * (hCount2-1))+2 + x*4);
+                    Debug.Log (((y*4)     * (hCount2-1)) + x*4 + 1);
+ 
+                    Debug.Log(((y*4) * (hCount2-1))+2 + x*4);
+                    Debug.Log(((y*4) * (hCount2-1))+2 + x*4 + 1);
+                   	Debug.Log(((y*4)   * (hCount2-1)) + x*4 + 1);
+
+					
+					
 					currentVerts.Add(vertices[triangles[index]]);
 					currentVerts.Add(vertices[triangles[index-1]]);
 					currentVerts.Add(vertices[triangles[index-2]]);
@@ -412,16 +450,11 @@ public void iterateColliderSides (GameObject wall)
 					currentVerts.Add(vertices[triangles[index-5]]);
 					
 					
-					uvs[(y     * hCount2) + x] = new Vector2(1,1);
-					uvs[((y+1) * hCount2) + x] = new Vector2(1,0);
-					uvs[(y     * hCount2) + x + 1] = new Vector2(0,1);
-					uvs[((y+1) * hCount2) + x + 1] = new Vector2(0,0);
-					
-					Debug.Log((y     * hCount2) + x);
-					Debug.Log(((y+1) * hCount2) + x);
-					Debug.Log(((y     * hCount2) + x + 1));
-					Debug.Log(((y+1     * hCount2) + x + 1));
-					
+//					uvs[(y     * hCount2) + x] = new Vector2(1,1);
+//					uvs[((y+1) * hCount2) + x] = new Vector2(1,0);
+//					uvs[(y     * hCount2) + x + 1] = new Vector2(0,1);
+//					uvs[((y+1) * hCount2) + x + 1] = new Vector2(0,0);
+//					
 					
 					// this does not work because the uv array is only as big as the number of verts(I think non unique), not the number of tris)
 				
@@ -451,7 +484,7 @@ public void iterateColliderSides (GameObject wall)
 						.OrderBy(go => Vector3.Distance(go.transform.position, centroid))
 							.FirstOrDefault();
 					
-						Debug.Log(closestGameObject);
+						//Debug.Log(closestGameObject);
 					
 					
 					
@@ -468,14 +501,25 @@ public void iterateColliderSides (GameObject wall)
                 for (int x = 0; x < widthSegments; x++)
                 {
 				
-                    triangles[index]   = (y     * hCount2) + x;
-                    triangles[index+1] = ((y+1) * hCount2) + x;
-                    triangles[index+2] = (y     * hCount2) + x + 1;
+                    triangles[index]   = ((y*4)     * (hCount2-1)) + x*4;
+                    triangles[index+1] = ((y*4) * (hCount2-1))+2 + x*4;
+                    triangles[index+2] = ((y*4)     * (hCount2-1)) + x*4 + 1;
  
-                    triangles[index+3] = ((y+1) * hCount2) + x;
-                    triangles[index+4] = ((y+1) * hCount2) + x + 1;
-                    triangles[index+5] = (y     * hCount2) + x + 1;
+                    triangles[index+3] = ((y*4) * (hCount2-1))+2 + x*4;
+                    triangles[index+4] = ((y*4) * (hCount2-1))+2 + x*4 + 1;
+                    triangles[index+5] = ((y*4)     * (hCount2-1)) + x*4 + 1;
                     
+					
+					Debug.Log(((y*4)     * (hCount2-1)) + x*4);
+                    Debug.Log(((y*4) * (hCount2-1))+2 + x*4);
+                    Debug.Log (((y*4)     * (hCount2-1)) + x*4 + 1);
+ 
+                    Debug.Log(((y*4) * (hCount2-1))+2 + x*4);
+                    Debug.Log(((y*4) * (hCount2-1))+2 + x*4 + 1);
+                   	Debug.Log(((y*4)   * (hCount2-1)) + x*4 + 1);
+
+					
+					
 					currentVerts.Add(vertices[triangles[index]]);
 					currentVerts.Add(vertices[triangles[index+1]]);
 					currentVerts.Add(vertices[triangles[index+2]]);
@@ -496,7 +540,7 @@ public void iterateColliderSides (GameObject wall)
 						.OrderBy(go => Vector3.Distance(go.transform.position, centroid))
 							.FirstOrDefault();
 					
-					Debug.Log(closestGameObject);
+					//Debug.Log(closestGameObject);
 					
 				
 				}
