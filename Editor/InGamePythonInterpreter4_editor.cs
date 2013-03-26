@@ -42,6 +42,8 @@ public class InGamePythonInterpreter4_editor : Editor
 		
 		EditorGUILayout.BeginVertical();
 		
+		Material mat = (target as InGamePythonInterpreter4).atlastMat;
+		(target as InGamePythonInterpreter4).atlastMat = (Material)EditorGUILayout.ObjectField(mat, typeof(Material),true);
 		
 		EditorGUILayout.LabelField("Size Options");
 		

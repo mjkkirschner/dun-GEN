@@ -16,6 +16,11 @@ using System.IO;
 /// </summary>
 public class InGamePythonInterpreter4 : MonoBehaviour 
 {	
+	
+	
+	
+	public Material atlastMat;
+	
 	public GameObject generator;
 	public levelobject curlevel;
 	public int iterations = 10;
@@ -242,14 +247,32 @@ public void iterateColliderSides (GameObject wall)
 	}
 	
 	
-	
-	
+	public Vector3 vertexCentroid (List<Vector3> currentVerts, GameObject ParentCluster)
+	{
+		Vector3 vertexCentroid = new Vector3(0,0,0);
+			
+		GameObject tempParent = new GameObject("temp offset");
+		tempParent.transform.position = ParentCluster.GetComponent<BoxCollider>().center;	
+			
+		
+		
+		
+		foreach (Vector3 vertex in currentVerts)
+		{
+		Vector3 vertexmoved = tempParent.transform.TransformPoint(vertex);
+		vertexCentroid += vertexmoved;
+			
+		}
+			DestroyImmediate(tempParent);
+			vertexCentroid = (vertexCentroid/currentVerts.Count);
+			return vertexCentroid;
+	}
 	
 	public GameObject genLowPolyMesh (String colSide,int widthSegments,int lengthSegments,float width,float length,GameObject ParentCluster)
 	{
 		
 			
-		
+			List<GameObject> tile_children = new List<GameObject>();
 			
 			Dictionary<Vector3,string> tilemap = ParentCluster.GetComponent<clusterComponet>().tilemap;
 			GameObject plane = new GameObject();	
@@ -257,7 +280,11 @@ public void iterateColliderSides (GameObject wall)
 			 MeshFilter meshFilter = (MeshFilter)plane.AddComponent(typeof(MeshFilter));
        		 plane.AddComponent(typeof(MeshRenderer));
 			
-			
+			foreach (Transform child in ParentCluster.transform)
+		{
+		
+			tile_children.Add(child.gameObject);
+		}
 			
 			
 		
@@ -282,13 +309,14 @@ public void iterateColliderSides (GameObject wall)
             float uvFactorY = 1.0f/lengthSegments;
             float scaleX = width/widthSegments;
             float scaleY = length/lengthSegments;
+			int uvindex  = 0;
             for (float y = 0.0f; y < vCount2; y++)
             {	
                 for (float x = 0.0f; x < hCount2; x++)
                 {	
 				
-					float minDistance = Mathf.Infinity;
-					GameObject closetObj = null;
+					
+					
                     if (colSide == "Top") //|| (colSide == "Bottom")
                     {
                         vertices[index] = new Vector3(x*scaleX - width/2f, 0.0f, y*scaleY - length/2f);
@@ -345,15 +373,14 @@ public void iterateColliderSides (GameObject wall)
 					}
                     
 					
-					Debug.Log(closetObj);
 					
-					
-					uvs[index++] = new Vector2(x*uvFactorX, y*uvFactorY);
+					index++;
+					//uvs[index++] = new Vector2(x*uvFactorX, y*uvFactorY);
                 }
             }
  
 		
-		
+		// create a new list to hold current verts
 		
 		List<Vector3> currentVerts = new List<Vector3>();
 		
@@ -362,7 +389,7 @@ public void iterateColliderSides (GameObject wall)
 			
 			
 			index = numTriangles-1;
-			
+			//uvindex = numVertices-1;
 			
 			for (int y = 0; y < lengthSegments; y++)
             {
@@ -385,36 +412,50 @@ public void iterateColliderSides (GameObject wall)
 					currentVerts.Add(vertices[triangles[index-5]]);
 					
 					
+					uvs[(y     * hCount2) + x] = new Vector2(1,1);
+					uvs[((y+1) * hCount2) + x] = new Vector2(1,0);
+					uvs[(y     * hCount2) + x + 1] = new Vector2(0,1);
+					uvs[((y+1) * hCount2) + x + 1] = new Vector2(0,0);
+					
+					Debug.Log((y     * hCount2) + x);
+					Debug.Log(((y+1) * hCount2) + x);
+					Debug.Log(((y     * hCount2) + x + 1));
+					Debug.Log(((y+1     * hCount2) + x + 1));
+					
+					
+					// this does not work because the uv array is only as big as the number of verts(I think non unique), not the number of tris)
+				
+					// need to work this out... what we need to accomplish is attaching the correct UV to each vertex of this
+					// iteration, then at the end we need to stop accessing the array, and skip over the UV generation.
+				/*if(uvindex >= 1){	
+						uvs[uvindex] = new Vector2(1,1);
+							uvindex -=1;
+						uvs[uvindex] = new Vector2(1,0);
+							uvindex -=1;
+					}
+					if(uvindex >= 1){	
+						uvs[uvindex] = new Vector2(0,1);
+							uvindex -=1;
+						uvs[uvindex] = new Vector2(0,0);
+							uvindex-=1;
+					}
+					*/
 					index -= 6;
 					
 					
+					//here we calculate the centroid of the quad and find the closest block
 					
-               Vector3 vertexCentroid = new Vector3(0,0,0);
-			
-		GameObject tempParent = new GameObject("temp offset");
-		tempParent.transform.position = ParentCluster.GetComponent<BoxCollider>().center;	
-			
-		
-		
-		
-		foreach (Vector3 vertex in currentVerts)
-		{
-		Vector3 vertexmoved = tempParent.transform.TransformPoint(vertex);
-		vertexCentroid += vertexmoved;
-			
-		}
-			vertexCentroid = (vertexCentroid/currentVerts.Count);
-			Debug.Log(vertexCentroid);
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
+					Vector3 centroid = vertexCentroid(currentVerts,ParentCluster);
+					
+					GameObject closestGameObject = tile_children
+						.OrderBy(go => Vector3.Distance(go.transform.position, centroid))
+							.FirstOrDefault();
+					
+						Debug.Log(closestGameObject);
+					
+					
+					
+					
 				}
             }
  	
@@ -447,36 +488,23 @@ public void iterateColliderSides (GameObject wall)
 					index += 6;
                 
 				
-				Vector3 vertexCentroid = new Vector3(0,0,0);
-			
-		GameObject tempParent = new GameObject("temp offset");
-		tempParent.transform.position = ParentCluster.GetComponent<BoxCollider>().center;	
-			
-		
-		
-		
-		foreach (Vector3 vertex in currentVerts)
-		{
-		Vector3 vertexmoved = tempParent.transform.TransformPoint(vertex);
-		vertexCentroid += vertexmoved;
-			
-		}
-			vertexCentroid = (vertexCentroid/currentVerts.Count);
-			Debug.Log(vertexCentroid);
-				
-				
-				
-				
-				
-				
-				
+					Vector3 centroid = vertexCentroid(currentVerts,ParentCluster);
+					
+					
+					
+					GameObject closestGameObject = tile_children
+						.OrderBy(go => Vector3.Distance(go.transform.position, centroid))
+							.FirstOrDefault();
+					
+					Debug.Log(closestGameObject);
+					
 				
 				}
             }
 		}
 			
 		
-		
+			
             m.vertices = vertices;
             m.uv = uvs;
             m.triangles = triangles;
@@ -485,7 +513,7 @@ public void iterateColliderSides (GameObject wall)
             //AssetDatabase.CreateAsset(m, "Assets/Editor/" + planeAssetName);
             //AssetDatabase.SaveAssets();
         
- 
+ 		meshFilter.renderer.sharedMaterial = atlastMat;
         meshFilter.sharedMesh = m;
         m.RecalculateBounds();
 		return plane;
