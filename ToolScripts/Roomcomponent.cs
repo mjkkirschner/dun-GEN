@@ -47,7 +47,7 @@ public class Roomcomponent : MonoBehaviour
 	foreach (GameObject model in modelarray){
 		Texture2D texturetoload = new Texture2D(100,100);	
 		string name = model.name;
-		 using (BinaryReader reader = new BinaryReader(File.Open(Application.dataPath +"/asset_textures/" + name, FileMode.Open)))
+		 using (BinaryReader reader = new BinaryReader(File.Open(Application.dataPath +"/asset_textures/" + name +".png" , FileMode.Open)))
 			{
 			texturetoload.LoadImage(reader.ReadBytes((int)reader.BaseStream.Length));
 			}	
@@ -168,7 +168,7 @@ public class Roomcomponent : MonoBehaviour
 		//Createpreviewfolder();
 		
 		
-		
+		int texResolution = GameObject.Find("Interpreter").GetComponent<InGamePythonInterpreter4>().texResolution;
 		
 		
 		foreach (GameObject model in modelarray)
@@ -176,16 +176,24 @@ public class Roomcomponent : MonoBehaviour
 			
 			if (model.GetComponent<genFlatTexTile>() == null) 
 			{
+			GameObject.Find("Interpreter").GetComponent<InGamePythonInterpreter4>().atlasDirty = true;	
 			model.AddComponent<genFlatTexTile>();
-			model.GetComponent<genFlatTexTile>().genTileTextures();
+			model.GetComponent<genFlatTexTile>().genTileTextures(texResolution);
+			
 			}
 			
 			else if((model.GetComponent<genFlatTexTile>().atlasUvs.Length == 0) || (model.GetComponent<genFlatTexTile>().textures.Count == 0))
 			{
-				Debug.Log("regenerating texes");
-			model.GetComponent<genFlatTexTile>().genTileTextures();	
+			GameObject.Find("Interpreter").GetComponent<InGamePythonInterpreter4>().atlasDirty = true;	
+			Debug.Log("regenerating texes");
+			model.GetComponent<genFlatTexTile>().genTileTextures(texResolution);
+			
 			}
 		}	
+		
+		
+		// now all the textures and subatlases are built, we should now create our larger atlas and texture
+		
 		
 		UpdatePreviews();
 		

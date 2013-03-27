@@ -235,7 +235,7 @@ public class genFlatTexTile : MonoBehaviour {
 		
 	
 			
-	public void genTileTextures () {
+	public void genTileTextures (int texResolution) {
 	
 		
 		
@@ -245,7 +245,7 @@ public class genFlatTexTile : MonoBehaviour {
 	
 	textureAtlas = new Texture2D(512,512);
 		
-	if ((!File.Exists(Application.dataPath +"/asset_textures/" +this.name)) || (!File.Exists(Application.dataPath +"/asset_textures/" +this.name +"_atlas")))
+	if ((!File.Exists(Application.dataPath +"/asset_textures/" +this.name +".png")) || (!File.Exists(Application.dataPath +"/asset_textures/" +this.name +"_atlas")))
 		{
 		
 	Vector3 direction;	
@@ -285,15 +285,15 @@ public class genFlatTexTile : MonoBehaviour {
 	for (int x = -1; x <= 1; x += 2){ 	
 	
 				direction = new Vector3(x,0,0);
-		iterateColliderBounds(collider,32,direction);
+		iterateColliderBounds(collider,texResolution,direction);
 		}
 	for (int y = -1; y <= 1; y += 2){
 					direction = new Vector3(0,y,0);
-		iterateColliderBounds(collider,32,direction);
+		iterateColliderBounds(collider,texResolution,direction);
 			}
 	for (int z = -1; z <= 1; z += 2){
 					direction = new Vector3(0,0,z);
-		iterateColliderBounds(collider,32,direction);
+		iterateColliderBounds(collider,texResolution,direction);
 				}			
 		
 	
@@ -322,7 +322,7 @@ public class genFlatTexTile : MonoBehaviour {
 	
 			
 	byte[] texturetosave = textureAtlas.EncodeToPNG();
-	File.WriteAllBytes(Application.dataPath + "/asset_textures/"+this.name ,texturetosave);		
+	File.WriteAllBytes(Application.dataPath + "/asset_textures/"+this.name +".png" ,texturetosave);		
 			
 			
 	this.gameObject.transform.localPosition += new Vector3(-100,-100,-100);
@@ -333,7 +333,7 @@ public class genFlatTexTile : MonoBehaviour {
 			
 		
 		
-		 using (BinaryReader reader = new BinaryReader(File.Open(Application.dataPath +"/asset_textures/" + this.name, FileMode.Open)))
+		 using (BinaryReader reader = new BinaryReader(File.Open(Application.dataPath +"/asset_textures/" + this.name +".png", FileMode.Open)))
 			{
 			textureAtlas.LoadImage(reader.ReadBytes((int)reader.BaseStream.Length));
 			}	

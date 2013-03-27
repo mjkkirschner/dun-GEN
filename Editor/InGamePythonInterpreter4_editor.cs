@@ -42,8 +42,57 @@ public class InGamePythonInterpreter4_editor : Editor
 		
 		EditorGUILayout.BeginVertical();
 		
+		
+		EditorGUILayout.LabelField("Texture/Atlas Options");
+
+		
 		Material mat = (target as InGamePythonInterpreter4).atlastMat;
 		(target as InGamePythonInterpreter4).atlastMat = (Material)EditorGUILayout.ObjectField(mat, typeof(Material),true);
+		
+		
+		if (GUILayout.Button("Destroy Atlas"))
+			{
+			
+			
+			(target as InGamePythonInterpreter4).atlasDirty = true;
+			
+			}
+		
+		if (GUILayout.Button("Destroy Textures"))
+			{
+			
+			
+			(target as InGamePythonInterpreter4).atlasDirty = true;
+			string[] filePaths = Directory.GetFiles(Application.dataPath +"/asset_textures/"); 	
+	
+		foreach(string filename in filePaths){
+			
+				File.Delete(filename);
+			
+			}
+		
+		foreach(GameObject tile in (GameObject.FindGameObjectsWithTag("tiles")))
+				{
+				
+				if(tile.GetComponent<genFlatTexTile>()){
+					
+					genFlatTexTile gencomponent = tile.GetComponent<genFlatTexTile>();
+				
+					gencomponent.textures.Clear();
+					
+					}
+				}
+				
+			
+			}
+		
+		
+		
+		
+		
+		interpreter.texResolution = EditorGUILayout.IntSlider("Tile Resolution",interpreter.texResolution,32,512);
+		
+		
 		
 		EditorGUILayout.LabelField("Size Options");
 		
@@ -155,9 +204,45 @@ public class InGamePythonInterpreter4_editor : Editor
 		if (GUILayout.Button("Run/Generate"))
 			{
 			
+			Debug.Log(interpreter.oldResolution);
+				// if the resolution has changed since we last ran generate
+			if (interpreter.oldResolution != interpreter.texResolution)
+			{
+			// then set the old resolution to this new resolution, set the dirty flag, and destroy all textures	
+			interpreter.oldResolution = interpreter.texResolution;
+			interpreter.atlasDirty = true;
+			Debug.Log(interpreter.oldResolution);
+
+				
+			string[] filePaths_run = Directory.GetFiles(Application.dataPath +"/asset_textures/"); 	
+	
+			foreach(string filename in filePaths_run)
+				{
 			
+				File.Delete(filename);	
+				Debug.Log("deleting" + filename);
+				}
+			
+			foreach(GameObject tile in (GameObject.FindGameObjectsWithTag("tiles")))
+				{
+				
+				if(tile.GetComponent<genFlatTexTile>()){
+					
+					genFlatTexTile gencomponent = tile.GetComponent<genFlatTexTile>();
+				
+					gencomponent.textures.Clear();
+					
+					}
+				}
+			
+			
+			
+			}
+				
 			(target as InGamePythonInterpreter4).Run();
 			
+			
+				
 			}
 		
 		if (GUILayout.Button("Save_Level"))
@@ -170,6 +255,6 @@ public class InGamePythonInterpreter4_editor : Editor
 		
 		
 		
-	}
+		}
 
-}
+	}

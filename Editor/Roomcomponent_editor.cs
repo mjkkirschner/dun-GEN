@@ -134,7 +134,7 @@ public class Roomcomponent_editor : Editor
 				
 			// after restarting unity room.walls is being lost.
 			interperter.parseroom2((target as Roomcomponent).room,interperter.heighttable,(target as Roomcomponent).modelarray,(target as Roomcomponent).gameObject);
-			
+			interperter.genMajorAtlas();
 			
 			
 			

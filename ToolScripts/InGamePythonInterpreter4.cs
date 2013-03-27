@@ -17,8 +17,9 @@ using System.IO;
 public class InGamePythonInterpreter4 : MonoBehaviour 
 {	
 	
-	
-	
+	public int oldResolution;
+	public int texResolution = 32;
+	public bool atlasDirty = false; 
 	public Material atlastMat;
 	
 	public GameObject generator;
@@ -169,6 +170,139 @@ public class InGamePythonInterpreter4 : MonoBehaviour
 //	
 //		}
 //}
+
+	
+	
+	
+public void genMajorAtlas () {
+	
+	Rect [] atlasUvs; 	
+	// we need to grab a list of textures from the preview folder	
+	List<Texture2D> textures = new List<Texture2D>(); 	
+	
+	string[] filePaths = Directory.GetFiles(Application.dataPath +"/asset_textures/", "*.png"); 	
+	
+		foreach(string filename in filePaths){
+	 		
+			Texture2D texture = new Texture2D(100,100);
+			
+			using (BinaryReader reader = new BinaryReader(File.Open(filename, FileMode.Open)))
+			{
+			texture.LoadImage(reader.ReadBytes((int)reader.BaseStream.Length));
+			}	
+			textures.Add(texture);
+			
+		}
+		
+		// we should now have an array filled with all textures.. we'll take this and pass it to the pack function
+			
+	Debug.Log("starting major atlas generation ");		
+		
+	//Createpreviewfolder();	
+	
+	Texture2D textureAtlas = new Texture2D(4096,4096);
+		
+	if ((!File.Exists(Application.dataPath +"/asset_textures/majorTexture")) || (!File.Exists(Application.dataPath +"/asset_textures/majorTexture"  +"_atlas")) || (atlasDirty == true ))
+		{
+			
+	// if the atlas is not there recreate it from all the textures	
+	
+	Debug.Log("attemtping to build major atlas and return coords");
+			
+	atlasUvs = textureAtlas.PackTextures(textures.ToArray(),0);
+	RectSerializer[] atlasUvs_serialize = new RectSerializer[atlasUvs.Length];
+	
+			
+	for (int i = 0; i < atlasUvs.Length; i++)
+			{
+			Rect uv = atlasUvs[i];
+			
+			RectSerializer newrect = new RectSerializer();
+			newrect.Fill(uv);
+			atlasUvs_serialize[i] = newrect;	
+				
+			}
+			
+	string fileName = Application.dataPath + "/asset_textures/majorTexture" + "_atlas";		
+			
+	BinaryFormatter bf = new BinaryFormatter();
+	FileStream fs = new FileStream(fileName,FileMode.Create,FileAccess.Write);
+	bf.Serialize(fs,atlasUvs_serialize);		
+	fs.Close();				
+	
+	// we just saved the atlas of the major atlas  out		
+			
+	byte[] texturetosave = textureAtlas.EncodeToPNG();
+	File.WriteAllBytes(Application.dataPath + "/asset_textures/majorTexture" ,texturetosave);		
+			
+			
+		
+		}
+		
+	else{
+		// if they both already exist then load it and the atlas data	
+		// but  check that the lengths are the same, if they are not then throw this atlas away and recall this function
+		
+		 using (BinaryReader reader = new BinaryReader(File.Open(Application.dataPath +"/asset_textures/majorTexture", FileMode.Open)))
+			{
+			textureAtlas.LoadImage(reader.ReadBytes((int)reader.BaseStream.Length));
+			}	
+		
+			string fileName = Application.dataPath + "/asset_textures/majorTexture" + "_atlas";
+			BinaryFormatter bf = new BinaryFormatter();
+			FileStream fs = new FileStream(fileName,FileMode.Open,FileAccess.Read);
+			RectSerializer[] atlasUvs_serialize = (RectSerializer[])bf.Deserialize(fs);
+			
+			atlasUvs = new Rect[atlasUvs_serialize.Length];
+			for (int i = 0; i < atlasUvs_serialize.Length; i++)
+			{
+				RectSerializer uv = atlasUvs_serialize[i];
+				atlasUvs[i] = uv.Rect2;
+			}
+			
+			fs.Close();
+			
+			//we can repopulate the texture array for each model here if we like, the problem is if we already have the atlas saved out then we don't
+			//regenerate the textures so we never add them to the textures array, theres really no reason, but might be later, we can extract them
+			// from the atlas anyway..
+			
+			// this isnt a particulary great check, what if I got rid of 2 textures and then added two textures?
+			if (filePaths.Length != atlasUvs.Length)
+			{
+			
+				File.Delete(Application.dataPath +"/asset_textures/majorTexture");
+				File.Delete(fileName);	
+			}
+			
+			
+		}	
+		
+	
+		
+		//at this point the atlas should be set full of rectangles and the textures all generated.
+//		
+//		faceDictionary.Clear();
+//		rotationDictionary.Clear();
+//		
+//		// we may want to make this conditional upon the current rotation, so if we are rotated a certain way then we add 
+//		// the top face to whatever is actually on top, we can also just do this at the time we get the textures
+//		
+//		faceDictionary.Add("right",atlasUvs[0]);
+//		faceDictionary.Add("left",atlasUvs[1]);	
+//		faceDictionary.Add("top",atlasUvs[2]);	
+//		faceDictionary.Add("bottom",atlasUvs[3]);
+//		faceDictionary.Add("back",atlasUvs[4]);
+//		faceDictionary.Add("front",atlasUvs[5]);
+//		
+
+			
+		atlasDirty = false;
+	
+	}	
+	
+	
+	
+	
 	
 public void iterateColliderSides (GameObject wall)
 	{
@@ -393,20 +527,12 @@ public void iterateColliderSides (GameObject wall)
 					
 					
 					index += 4;
-					Debug.Log("verts");
-					Debug.Log(index);
-					//uvs[index++] = new Vector2(x*uvFactorX, y*uvFactorY);
+					
                 }
             }
  		
 		
-//		foreach (Vector3 vert in vertices)
-//			{
-//				GameObject newvert = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-//				newvert.transform.localScale = new Vector3(.1f,.1f,.1f);
-//				newvert.transform.position = vert;
-//			}
-//		
+
 		
 		// create a new list to hold current verts
 		
@@ -432,13 +558,7 @@ public void iterateColliderSides (GameObject wall)
                     triangles[index-4] = ((y*4) * (hCount2-1))+2 + x*4 + 1;
                     triangles[index-5] = ((y*4)     * (hCount2-1)) + x*4 + 1;
                     
-					Debug.Log(((y*4)     * (hCount2-1)) + x*4);
-                    Debug.Log(((y*4) * (hCount2-1))+2 + x*4);
-                    Debug.Log (((y*4)     * (hCount2-1)) + x*4 + 1);
- 
-                    Debug.Log(((y*4) * (hCount2-1))+2 + x*4);
-                    Debug.Log(((y*4) * (hCount2-1))+2 + x*4 + 1);
-                   	Debug.Log(((y*4)   * (hCount2-1)) + x*4 + 1);
+					
 
 					
 					
@@ -450,29 +570,11 @@ public void iterateColliderSides (GameObject wall)
 					currentVerts.Add(vertices[triangles[index-5]]);
 					
 					
-//					uvs[(y     * hCount2) + x] = new Vector2(1,1);
-//					uvs[((y+1) * hCount2) + x] = new Vector2(1,0);
-//					uvs[(y     * hCount2) + x + 1] = new Vector2(0,1);
-//					uvs[((y+1) * hCount2) + x + 1] = new Vector2(0,0);
-//					
-					
-					// this does not work because the uv array is only as big as the number of verts(I think non unique), not the number of tris)
-				
-					// need to work this out... what we need to accomplish is attaching the correct UV to each vertex of this
-					// iteration, then at the end we need to stop accessing the array, and skip over the UV generation.
-				/*if(uvindex >= 1){	
-						uvs[uvindex] = new Vector2(1,1);
-							uvindex -=1;
-						uvs[uvindex] = new Vector2(1,0);
-							uvindex -=1;
-					}
-					if(uvindex >= 1){	
-						uvs[uvindex] = new Vector2(0,1);
-							uvindex -=1;
-						uvs[uvindex] = new Vector2(0,0);
-							uvindex-=1;
-					}
-					*/
+					uvs[(((y*4)     * (hCount2-1)) + x*4)] = new Vector2(0,0);
+					uvs[(((y*4) * (hCount2-1))+2 + x*4)] = new Vector2(1,0);
+					uvs[(((y*4)     * (hCount2-1)) + x*4 + 1)] = new Vector2(0,1);
+					uvs[(((y*4) * (hCount2-1))+2 + x*4 + 1)] = new Vector2(1,1);
+
 					index -= 6;
 					
 					
@@ -484,7 +586,7 @@ public void iterateColliderSides (GameObject wall)
 						.OrderBy(go => Vector3.Distance(go.transform.position, centroid))
 							.FirstOrDefault();
 					
-						//Debug.Log(closestGameObject);
+						Debug.Log(closestGameObject);
 					
 					
 					
@@ -510,16 +612,7 @@ public void iterateColliderSides (GameObject wall)
                     triangles[index+5] = ((y*4)     * (hCount2-1)) + x*4 + 1;
                     
 					
-					Debug.Log(((y*4)     * (hCount2-1)) + x*4);
-                    Debug.Log(((y*4) * (hCount2-1))+2 + x*4);
-                    Debug.Log (((y*4)     * (hCount2-1)) + x*4 + 1);
- 
-                    Debug.Log(((y*4) * (hCount2-1))+2 + x*4);
-                    Debug.Log(((y*4) * (hCount2-1))+2 + x*4 + 1);
-                   	Debug.Log(((y*4)   * (hCount2-1)) + x*4 + 1);
-
-					
-					
+			
 					currentVerts.Add(vertices[triangles[index]]);
 					currentVerts.Add(vertices[triangles[index+1]]);
 					currentVerts.Add(vertices[triangles[index+2]]);
@@ -540,7 +633,7 @@ public void iterateColliderSides (GameObject wall)
 						.OrderBy(go => Vector3.Distance(go.transform.position, centroid))
 							.FirstOrDefault();
 					
-					//Debug.Log(closestGameObject);
+					Debug.Log(closestGameObject);
 					
 				
 				}
@@ -1055,7 +1148,8 @@ foreach (Transform cluster in roomcenter.transform.FindChild(wallside).transform
 	//iterateColliderSides(roomcenter.transform.FindChild("floor").gameObject);		
 	//temporarily turn off the floor since we are not sorting it and creating lookup texture dictionaries for it yet... and cluster comps etc.
 		
-	
+	// guessing we need to do the atlas creation after all the room parsing and building because
+	// the other texture creation is happening as we iterate each room	
 	
 	
 		
@@ -1348,7 +1442,9 @@ foreach (Transform cluster in roomcenter.transform.FindChild(wallside).transform
 				{
 					parseroom2(room,heighttable,modelarray);
 				}
-					
+							
+				genMajorAtlas();
+		
 				 curlevel = new levelobject(table,heighttable,crooms);	
 				 save("auto_iteration_save.txt");		
 			}
