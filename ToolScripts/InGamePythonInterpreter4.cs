@@ -20,7 +20,9 @@ public class InGamePythonInterpreter4 : MonoBehaviour
 	public int oldResolution;
 	public int texResolution = 32;
 	public bool atlasDirty = false; 
-	public Material atlastMat;
+	public Material  atlastMat;
+	public Texture2D majorTextureAtlas;
+	
 	
 	public GameObject generator;
 	public levelobject curlevel;
@@ -65,12 +67,7 @@ public class InGamePythonInterpreter4 : MonoBehaviour
    // private string m_pyOutput;
    // private PythonEnvironment m_pyEnv;
 	 
-//    private const string INITIALIZATION_CODE =
-//@"
-//import clr
-//clr.AddReference('UnityEngine')
-//import UnityEngine
-//";
+
 	
 	
 //	public void parseLevel(int[,]table,int [,]heighttable)
@@ -202,7 +199,7 @@ public void genMajorAtlas () {
 	
 	Texture2D textureAtlas = new Texture2D(4096,4096);
 		
-	if ((!File.Exists(Application.dataPath +"/asset_textures/majorTexture")) || (!File.Exists(Application.dataPath +"/asset_textures/majorTexture"  +"_atlas")) || (atlasDirty == true ))
+	if ((!File.Exists(Application.dataPath +"/asset_textures/majorTexture.png")) || (!File.Exists(Application.dataPath +"/asset_textures/majorTexture"  +"_atlas")) || (atlasDirty == true ))
 		{
 			
 	// if the atlas is not there recreate it from all the textures	
@@ -233,7 +230,7 @@ public void genMajorAtlas () {
 	// we just saved the atlas of the major atlas  out		
 			
 	byte[] texturetosave = textureAtlas.EncodeToPNG();
-	File.WriteAllBytes(Application.dataPath + "/asset_textures/majorTexture" ,texturetosave);		
+	File.WriteAllBytes(Application.dataPath + "/asset_textures/majorTexture.png" ,texturetosave);		
 			
 			
 		
@@ -243,7 +240,7 @@ public void genMajorAtlas () {
 		// if they both already exist then load it and the atlas data	
 		// but  check that the lengths are the same, if they are not then throw this atlas away and recall this function
 		
-		 using (BinaryReader reader = new BinaryReader(File.Open(Application.dataPath +"/asset_textures/majorTexture", FileMode.Open)))
+		 using (BinaryReader reader = new BinaryReader(File.Open(Application.dataPath +"/asset_textures/majorTexture.png", FileMode.Open)))
 			{
 			textureAtlas.LoadImage(reader.ReadBytes((int)reader.BaseStream.Length));
 			}	
@@ -267,15 +264,30 @@ public void genMajorAtlas () {
 			// from the atlas anyway..
 			
 			// this isnt a particulary great check, what if I got rid of 2 textures and then added two textures?
-			if (filePaths.Length != atlasUvs.Length)
+			if (filePaths.Length-1 != atlasUvs.Length)
 			{
 			
-				File.Delete(Application.dataPath +"/asset_textures/majorTexture");
+				File.Delete(Application.dataPath +"/asset_textures/majorTexture.png");
 				File.Delete(fileName);	
+				Debug.Log("DELETED THE ATLAS AND ATLAS TEXTURE");
+				
 			}
 			
 			
 		}	
+		
+		
+		
+		// set the textureAtlas variable to be stored on the interperter game object
+		
+//		majorTextureAtlas = textureAtlas;
+//		
+//		// change the texture on the atlas mat here.
+//		
+//		atlastMat.SetTexture("_MainTex", majorTextureAtlas);
+		
+		
+
 		
 	
 		

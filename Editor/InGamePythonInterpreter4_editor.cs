@@ -45,8 +45,8 @@ public class InGamePythonInterpreter4_editor : Editor
 		
 		EditorGUILayout.LabelField("Texture/Atlas Options");
 
-		
 		Material mat = (target as InGamePythonInterpreter4).atlastMat;
+		
 		(target as InGamePythonInterpreter4).atlastMat = (Material)EditorGUILayout.ObjectField(mat, typeof(Material),true);
 		
 		
@@ -241,9 +241,29 @@ public class InGamePythonInterpreter4_editor : Editor
 				
 			(target as InGamePythonInterpreter4).Run();
 			
+			AssetDatabase.ImportAsset("Assets/asset_textures/majorTexture.png");
 			
-				
-			}
+			Texture2D majorTextureAtlas = (Texture2D)AssetDatabase.LoadMainAssetAtPath("Assets/asset_textures/majorTexture.png");
+			
+			//Texture2D majorTextureAtlas = new Texture2D(512,512);
+			
+			//using (BinaryReader reader = new BinaryReader(File.Open(Application.dataPath +"/asset_textures/majorTexture.png", FileMode.Open)))
+			//{
+		//majorTextureAtlas.LoadImage(reader.ReadBytes((int)reader.BaseStream.Length));
+		//	}	
+			
+			// change the texture on the atlas mat here.
+		
+			
+		
+			
+			(target as InGamePythonInterpreter4).atlastMat.SetTexture("_MainTex", majorTextureAtlas);
+			
+			AssetDatabase.SaveAssets();
+			
+			
+			
+		}
 		
 		if (GUILayout.Button("Save_Level"))
 			{
