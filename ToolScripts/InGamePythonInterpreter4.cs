@@ -17,6 +17,8 @@ using System.IO;
 public class InGamePythonInterpreter4 : MonoBehaviour 
 {	
 	
+	
+	public Dictionary<string,Rect> atlasDict;
 	public int oldResolution;
 	public int texResolution = 32;
 	public bool atlasDirty = false; 
@@ -177,6 +179,7 @@ public void genMajorAtlas () {
 	// we need to grab a list of textures from the preview folder	
 	List<Texture2D> textures = new List<Texture2D>(); 	
 	
+	// this can cause a problem where the atlas creates an atlas with itself.	
 	string[] filePaths = Directory.GetFiles(Application.dataPath +"/asset_textures/", "*.png"); 	
 	
 		foreach(string filename in filePaths){
@@ -188,6 +191,8 @@ public void genMajorAtlas () {
 			texture.LoadImage(reader.ReadBytes((int)reader.BaseStream.Length));
 			}	
 			textures.Add(texture);
+			
+			
 			
 		}
 		
@@ -278,9 +283,25 @@ public void genMajorAtlas () {
 		
 		
 		
+		
+		 atlasDict =  new Dictionary<string, Rect>();
+			Debug.Log("RESET ATLASDICT");
+		
+		for (int i = 0; i < atlasUvs.Length; i++)
+		{
+			
+			Debug.Log(Path.GetFileName(filePaths[i])); 
+				
+			atlasDict.Add(Path.GetFileName(filePaths[i]),atlasUvs[i]);
+			
+			
+		}
+			
+		
+		
 		// set the textureAtlas variable to be stored on the interperter game object
 		
-//		majorTextureAtlas = textureAtlas;
+		majorTextureAtlas = textureAtlas;
 //		
 //		// change the texture on the atlas mat here.
 //		
@@ -582,23 +603,58 @@ public void iterateColliderSides (GameObject wall)
 					currentVerts.Add(vertices[triangles[index-5]]);
 					
 					
-					uvs[(((y*4)     * (hCount2-1)) + x*4)] = new Vector2(0,0);
-					uvs[(((y*4) * (hCount2-1))+2 + x*4)] = new Vector2(1,0);
-					uvs[(((y*4)     * (hCount2-1)) + x*4 + 1)] = new Vector2(0,1);
-					uvs[(((y*4) * (hCount2-1))+2 + x*4 + 1)] = new Vector2(1,1);
-
-					index -= 6;
-					
 					
 					//here we calculate the centroid of the quad and find the closest block
 					
 					Vector3 centroid = vertexCentroid(currentVerts,ParentCluster);
+					
+					
+					
+					
 					
 					GameObject closestGameObject = tile_children
 						.OrderBy(go => Vector3.Distance(go.transform.position, centroid))
 							.FirstOrDefault();
 					
 						Debug.Log(closestGameObject);
+					
+					// based on the closest object, we then lookup the correct rectangle inside the dictionary for the atlas,
+					// then we need to lookup the correct side based on the rotation of that gameobject, we can get it from the
+					// the genFlatTexTile component facedictionary and rotatindictionary I think
+					
+					// this gives us the uv coords for a specifc sub atlas
+						
+					
+					string name = closestGameObject.name.Remove(closestGameObject.name.Length-7);
+					
+					Debug.Log(name + ".png");
+
+					
+					Rect currentRect = atlasDict[name + ".png"];
+					// now get the specific side of a certain tile, im just getting the first rectangle here for testing
+					// OH OH, we need to combine these rectangles together somehow haha!!!!
+					
+					Rect subRect = closestGameObject.GetComponent<genFlatTexTile>().atlasUvs[0];
+					
+					Debug.Log(((texResolution*3))/majorTextureAtlas.width);
+					Debug.Log(texResolution);
+					Debug.Log(majorTextureAtlas.width);
+					
+					float texScalex = (float)(texResolution*3)/(float)majorTextureAtlas.width;
+					float texScaley  =(float)(texResolution*2)/(float)majorTextureAtlas.height;
+					
+					
+					Debug.Log(texScalex);
+					
+					uvs[(((y*4)     * (hCount2-1)) + x*4)] = new Vector2(currentRect.x + subRect.x *(texScalex),currentRect.y + subRect.y*(texScaley));
+					uvs[(((y*4) * (hCount2-1))+2 + x*4)] = new Vector2(currentRect.x + subRect.x *(texScalex) + subRect.width*(texScalex),currentRect.y + subRect.y*(texScaley));
+					uvs[(((y*4)     * (hCount2-1)) + x*4 + 1)] = new Vector2(currentRect.x + subRect.x *(texScalex),currentRect.y + subRect.y*(texScaley) + subRect.height*(texScaley));
+					uvs[(((y*4) * (hCount2-1))+2 + x*4 + 1)] = new Vector2(currentRect.x + subRect.x *(texScalex)+ subRect.width*(texScalex),currentRect.y + subRect.y*(texScaley) + subRect.height*(texScaley));
+
+					index -= 6;
+					
+					
+					
 					
 					
 					
@@ -999,6 +1055,71 @@ foreach (Transform cluster in roomcenter.transform.FindChild(wallside).transform
 		
 	}
 		
+	
+	
+	
+	public void clusterRoomAndGenMesh(GameObject roomcenter)
+	{
+		
+		
+	//this creates sub clusters that group the walls 
+
+	clusterTiles(roomcenter,"topwall");
+	clusterTiles(roomcenter,"bottomwall");
+	clusterTiles(roomcenter,"leftwall");
+	clusterTiles(roomcenter,"rightwall");
+	clusterTiles(roomcenter,"floor");	
+	
+		
+		
+	clusterTiles_findCuts(roomcenter,"topwall");
+	clusterTiles_findCuts(roomcenter,"bottomwall");
+	clusterTiles_findCuts(roomcenter,"leftwall");
+	clusterTiles_findCuts(roomcenter,"rightwall");
+	clusterTiles_findCuts(roomcenter,"floor");		
+		
+		
+		
+	//this creates colliders around entire walls	
+		
+	createEncapCollider(roomcenter,"topwall");
+	createEncapCollider(roomcenter,"bottomwall");
+	createEncapCollider(roomcenter,"leftwall");
+	createEncapCollider(roomcenter,"rightwall");
+	createEncapCollider(roomcenter,"floor");	
+	
+		
+		
+		
+	// this creates a dictionary of the tiles relative to the bottom left corner of the wall	
+	// it may be necessary to do this before generating the tiles, then inside of the generation method we can grab the correct tile.
+	// lets test that first...... this method needs to be tested for working with more than just the topwall!!!!!	
+	SortXYZ(roomcenter,"topwall");		
+	SortXYZ(roomcenter,"bottomwall");
+	SortXYZ(roomcenter,"leftwall");	
+	SortXYZ(roomcenter,"rightwall");
+	
+		
+		
+		
+	// this iterates each side of each wall and then creates low poly planes on each side.	
+		
+	iterateColliderSides(roomcenter.transform.FindChild("topwall").gameObject);		
+	iterateColliderSides(roomcenter.transform.FindChild("bottomwall").gameObject);		
+	iterateColliderSides(roomcenter.transform.FindChild("leftwall").gameObject);		
+	iterateColliderSides(roomcenter.transform.FindChild("rightwall").gameObject);		
+	//iterateColliderSides(roomcenter.transform.FindChild("floor").gameObject);		
+	//temporarily turn off the floor since we are not sorting it and creating lookup texture dictionaries for it yet... and cluster comps etc.
+		
+	// guessing we need to do the atlas creation after all the room parsing and building because
+	// the other texture creation is happening as we iterate each room	
+		
+		
+		
+	}
+	
+	
+	
 	public void parseroom2(roomsimple room, int[,] heighttable, List<GameObject> modelarray, GameObject parent ){
 	
 		
@@ -1111,58 +1232,6 @@ foreach (Transform cluster in roomcenter.transform.FindChild(wallside).transform
 		}
 
 		
-	//this creates sub clusters that group the walls 
-
-	clusterTiles(roomcenter,"topwall");
-	clusterTiles(roomcenter,"bottomwall");
-	clusterTiles(roomcenter,"leftwall");
-	clusterTiles(roomcenter,"rightwall");
-	clusterTiles(roomcenter,"floor");	
-	
-		
-		
-	clusterTiles_findCuts(roomcenter,"topwall");
-	clusterTiles_findCuts(roomcenter,"bottomwall");
-	clusterTiles_findCuts(roomcenter,"leftwall");
-	clusterTiles_findCuts(roomcenter,"rightwall");
-	clusterTiles_findCuts(roomcenter,"floor");		
-		
-		
-		
-	//this creates colliders around entire walls	
-		
-	createEncapCollider(roomcenter,"topwall");
-	createEncapCollider(roomcenter,"bottomwall");
-	createEncapCollider(roomcenter,"leftwall");
-	createEncapCollider(roomcenter,"rightwall");
-	createEncapCollider(roomcenter,"floor");	
-	
-		
-		
-		
-	// this creates a dictionary of the tiles relative to the bottom left corner of the wall	
-	// it may be necessary to do this before generating the tiles, then inside of the generation method we can grab the correct tile.
-	// lets test that first...... this method needs to be tested for working with more than just the topwall!!!!!	
-	SortXYZ(roomcenter,"topwall");		
-	SortXYZ(roomcenter,"bottomwall");
-	SortXYZ(roomcenter,"leftwall");	
-	SortXYZ(roomcenter,"rightwall");
-	
-		
-		
-		
-	// this iterates each side of each wall and then creates low poly planes on each side.	
-		
-	iterateColliderSides(roomcenter.transform.FindChild("topwall").gameObject);		
-	iterateColliderSides(roomcenter.transform.FindChild("bottomwall").gameObject);		
-	iterateColliderSides(roomcenter.transform.FindChild("leftwall").gameObject);		
-	iterateColliderSides(roomcenter.transform.FindChild("rightwall").gameObject);		
-	//iterateColliderSides(roomcenter.transform.FindChild("floor").gameObject);		
-	//temporarily turn off the floor since we are not sorting it and creating lookup texture dictionaries for it yet... and cluster comps etc.
-		
-	// guessing we need to do the atlas creation after all the room parsing and building because
-	// the other texture creation is happening as we iterate each room	
-	
 	
 		
 	}
@@ -1200,8 +1269,7 @@ foreach (Transform cluster in roomcenter.transform.FindChild(wallside).transform
 		newroomcenter.GetComponent<Roomcomponent>().load_models();
 		
 		parseroom2(room,heighttable,modelarray,newroomcenter);	
-	
-			
+		
 		
 	}	
 		
@@ -1286,37 +1354,14 @@ foreach (Transform cluster in roomcenter.transform.FindChild(wallside).transform
 			
 			}
 	
-	// Use this for initialization
-	void Start () 
-    {
-		
-		
-
-//		testcode  = Resources.Load("mazegen1_roomslist") as TextAsset;
-//        m_pyCode = testcode.text;
-//		m_pyEnv = new PythonEnvironment();
-//        m_pyEnv.RunCommand(INITIALIZATION_CODE);
-//        m_pyOutput = string.Empty;
-		 
-			//m_pyEnv.RunCommand(m_pyCode);	
-		
-			//Action generate = m_pyEnv.m_scriptScope.GetVariable<Action>("genmaze");
-		
-            //get a delegate to the python function
-            //Func<int, bool> IsOdd = m_pyEnv.m_scriptScope.GetVariable<Func<int, bool>>("isodd");
-			
-			//Func<int, bool> IsZero = m_pyEnv.m_scriptScope.GetVariable<Func<int, bool>>("equalzero");
-			
 	
-	}
+	
 
 
-   // void OnGUI()
-    //{
+ 
 		
 		
-        //m_pyCode = GUI.TextArea(new Rect(50, 50, 600, 200), m_pyCode);
-      //  if (GUI.Button(new Rect(50, 270, 80, 40), "Run"))
+       
         public void Run ()
 		{	
 			
@@ -1325,29 +1370,7 @@ foreach (Transform cluster in roomcenter.transform.FindChild(wallside).transform
 			crooms.Clear();
 			
 			
-//            m_pyOutput = string.Empty;
-//           	m_pyEnv.ExposeVariable("iterations",iterations);
-//			m_pyEnv.ExposeVariable("xcenter",xcenter);
-//			m_pyEnv.ExposeVariable("ycenter",ycenter);
-//			m_pyEnv.ExposeVariable("xsd",xsd);
-//			m_pyEnv.ExposeVariable("ysd",ysd);
-//			
-//			m_pyEnv.ExposeVariable("doormaxalways",doormaxalways);
-//			m_pyEnv.ExposeVariable("doorminalways",doorminalways);
-//			m_pyEnv.ExposeVariable("doorrandomize",doorrandomize);			
-//			m_pyEnv.ExposeVariable("desireddoorwidth",desiredDoorWidth);
-//			
-//			m_pyEnv.ExposeVariable("flatlevel",flatlevel);
-//			m_pyEnv.ExposeVariable("heightmax",heightmax);
-//			m_pyEnv.ExposeVariable("heightmin",heightmin);
-			
-			
-			
-			
-			
-			
-			//PythonEnvironment.CommandResult result = m_pyEnv.RunCommand(m_pyCode);
-			
+
 			//if theres no generator object create one
 			if (GameObject.Find("Generator") == null)
 				{
@@ -1373,63 +1396,12 @@ foreach (Transform cluster in roomcenter.transform.FindChild(wallside).transform
 			heighttable = (int[,]) generator.GetComponent<mazegenerator_python_standin>().heightsTable;
 			
 			
-			//table =(int[,])  m_pyEnv.m_scriptScope.GetVariable("convertarr");
-			//heighttable = (int[,]) m_pyEnv.m_scriptScope.GetVariable("convertarrheights");
-			
-			// here we are going to take all the room objects from python and turn them into c# objects that can be serialized
-//			IList<object> orgrooms = (IList<object>) m_pyEnv.m_scriptScope.GetVariable("rooms");
-//			
-//			foreach (object element in orgrooms){
-//				rooms.Add((object)element);	
-//			}
+		
 		
 			rooms = generator.GetComponent<mazegenerator_python_standin>().rooms; 		
 		
 		
-			// the next few sections iterate all rooms from python and create roomsimple objets from them (so they can be serialzied)
-//			foreach (System.Object room in rooms){	
-//				
-//				
-//				int xpos = m_pyEnv.m_pythonEngine.Operations.GetMember<int>(room,"xpos");
-//				int ypos = m_pyEnv.m_pythonEngine.Operations.GetMember<int>(room,"ypos");
-//				
-//				int width = m_pyEnv.m_pythonEngine.Operations.GetMember<int>(room,"width");
-//				int height = m_pyEnv.m_pythonEngine.Operations.GetMember<int>(room,"height");
-//				System.Object center = m_pyEnv.m_pythonEngine.Operations.GetMember<System.Object>(room,"center"); 			
-//					float centerposx = m_pyEnv.m_pythonEngine.Operations.GetMember<float>(center,"x");
-//					float centerposy = m_pyEnv.m_pythonEngine.Operations.GetMember<float>(center,"y");
-//				Vector2 centerpos = new Vector2	(centerposx,centerposy);
-//					
-//					
-//					
-//				IList<object>walls = m_pyEnv.m_pythonEngine.Operations.GetMember<IList<object>>(room,"walls");
-//	
-//				List<Vector2> currentwalllist = new List<Vector2>();
-//				List<Vector2> currentfloortilelist = new List<Vector2>();	
-//					foreach (System.Object vector2 in walls){
-//					float posx = m_pyEnv.m_pythonEngine.Operations.GetMember<float>(vector2,"x");
-//					float posy = m_pyEnv.m_pythonEngine.Operations.GetMember<float>(vector2,"y");
-//					Vector2 position = new Vector2(posx,posy);	
-//					currentwalllist.Add(position);
-//				
-//				
-//			}
-//						
-//			IList<object>floors = m_pyEnv.m_pythonEngine.Operations.GetMember<IList<object>>(room,"floortiles");
-//			foreach (System.Object vector2 in floors){
-//					float posx = m_pyEnv.m_pythonEngine.Operations.GetMember<float>(vector2,"x");
-//					float posy = m_pyEnv.m_pythonEngine.Operations.GetMember<float>(vector2,"y");
-//					Vector2 position = new Vector2(posx,posy);
-//					currentfloortilelist.Add(position);
-//				
-//								
-//			}	
-//			// finally create the serializble room object from all the data we got from python and add it to the room list (crooms)
-//			roomsimple currentroom = new roomsimple(width,height,centerpos,currentwalllist,currentfloortilelist,xpos,ypos);
-//				
-//				crooms.Add(currentroom);
-//				
-//		}	
+			
 		
 		
 		foreach (room _room in rooms)
@@ -1439,23 +1411,36 @@ foreach (Transform cluster in roomcenter.transform.FindChild(wallside).transform
 			}	
 				
 			// we should check if generate returned something(maybe a bool on completion)	
-           // if (!string.IsNullOrEmpty(result.output))
-            //{
-                //m_pyOutput =  result.output;
+          
 				foreach (GameObject tile in tiles)
 				{
 				DestroyImmediate(tile);
 				}
 				tiles.Clear();
 				wallmasterlist.Clear();
-				//Debug.Log(m_pyOutput);
+				
 				
 				foreach (roomsimple room in crooms)
 				{
 					parseroom2(room,heighttable,modelarray);
+				
 				}
-							
+				
+				// now generate the atlas
+					
 				genMajorAtlas();
+		
+		
+		
+				// now generate the meshes now that the atlas is generated
+		
+				foreach (GameObject parent in roomparents)
+				{
+			
+				clusterRoomAndGenMesh(parent);	
+			
+				}
+		
 		
 				 curlevel = new levelobject(table,heighttable,crooms);	
 				 save("auto_iteration_save.txt");		
