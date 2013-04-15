@@ -431,7 +431,7 @@ public void iterateColliderSides (GameObject wall)
 			
 		}
 			DestroyImmediate(tempParent);
-			vertexCentroid = (vertexCentroid/currentVerts.Count);
+			vertexCentroid = (vertexCentroid/(float)currentVerts.Count);
 			return vertexCentroid;
 	}
 	
