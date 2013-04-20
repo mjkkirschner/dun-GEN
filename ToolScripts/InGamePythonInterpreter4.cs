@@ -346,6 +346,7 @@ public void iterateColliderSides (GameObject wall)
 		float length;
 		GameObject plane;
 		BoxCollider collider;
+		Vector3 offset;
 		
 	foreach (Transform wallCluster in wall.transform) 
 		{
@@ -358,7 +359,9 @@ public void iterateColliderSides (GameObject wall)
 	 		widthSegments = Mathf.RoundToInt(collider.size.x);	
 			lengthSegments = Mathf.RoundToInt(collider.size.z);	
 			
-			plane = genLowPolyMesh("Top", widthSegments,lengthSegments,width,length,wallCluster.gameObject);
+			offset = collider.center + new Vector3(0, collider.size.y/2, 0);
+			
+			plane = genLowPolyMesh("Top", widthSegments,lengthSegments,width,length,wallCluster.gameObject,offset);
 			plane.transform.position = collider.center + new Vector3(0, collider.size.y/2, 0);
 			
 			
@@ -367,7 +370,10 @@ public void iterateColliderSides (GameObject wall)
 			widthSegments = Mathf.RoundToInt(collider.size.x);	
 			lengthSegments = Mathf.RoundToInt(collider.size.z);	
 			
-			plane = genLowPolyMesh("Bottom", widthSegments,lengthSegments,width,length,wallCluster.gameObject);
+			offset = collider.center - new Vector3(0, collider.size.y/2, 0);
+			
+			
+			plane = genLowPolyMesh("Bottom", widthSegments,lengthSegments,width,length,wallCluster.gameObject,offset);
 			plane.transform.position = collider.center - new Vector3(0, collider.size.y/2, 0);
 			
 			
@@ -377,7 +383,9 @@ public void iterateColliderSides (GameObject wall)
 			widthSegments = Mathf.RoundToInt((collider).size.x);	
 			lengthSegments = Mathf.RoundToInt((collider).size.y);	
 			
-			plane = genLowPolyMesh("Front", widthSegments,lengthSegments,width,length,wallCluster.gameObject);
+			offset = collider.center - new Vector3(0,0, collider.size.z/2);
+			
+			plane = genLowPolyMesh("Front", widthSegments,lengthSegments,width,length,wallCluster.gameObject,offset);
 			plane.transform.position = collider.center - new Vector3(0,0, collider.size.z/2);
 			
 			
@@ -386,7 +394,9 @@ public void iterateColliderSides (GameObject wall)
 			widthSegments = Mathf.RoundToInt((collider).size.x);	
 			lengthSegments = Mathf.RoundToInt((collider).size.y);	
 			
-			plane = genLowPolyMesh("Back", widthSegments,lengthSegments,width,length,wallCluster.gameObject);
+			offset = collider.center + new Vector3(0,0, collider.size.z/2);
+			
+			plane = genLowPolyMesh("Back", widthSegments,lengthSegments,width,length,wallCluster.gameObject,offset);
 			plane.transform.position = collider.center + new Vector3(0,0, collider.size.z/2);
 			
 			
@@ -396,7 +406,9 @@ public void iterateColliderSides (GameObject wall)
 			widthSegments = Mathf.RoundToInt((collider).size.z);	
 			lengthSegments = Mathf.RoundToInt((collider).size.y);	
 			
-			plane = genLowPolyMesh("Right", widthSegments,lengthSegments,width,length,wallCluster.gameObject);
+			offset = collider.center +  new Vector3(collider.size.x/2,0,0);
+			
+			plane = genLowPolyMesh("Right", widthSegments,lengthSegments,width,length,wallCluster.gameObject,offset);
 			plane.transform.position = collider.center +  new Vector3(collider.size.x/2,0,0);
 			
 			
@@ -405,7 +417,9 @@ public void iterateColliderSides (GameObject wall)
 			widthSegments = Mathf.RoundToInt((collider).size.z);	
 			lengthSegments = Mathf.RoundToInt((collider).size.y);	
 			
-			plane = genLowPolyMesh("Left", widthSegments,lengthSegments,width,length,wallCluster.gameObject);
+			offset = collider.center -  new Vector3(collider.size.x/2,0,0);
+			
+			plane = genLowPolyMesh("Left", widthSegments,lengthSegments,width,length,wallCluster.gameObject,offset);
 			plane.transform.position = collider.center -  new Vector3(collider.size.x/2,0,0);
 			
 			
@@ -414,28 +428,41 @@ public void iterateColliderSides (GameObject wall)
 	}
 	
 	
-	public Vector3 vertexCentroid (List<Vector3> currentVerts, GameObject ParentCluster)
+	public Vector3 vertexCentroid (List<Vector3> currentVerts, GameObject ParentCluster,Vector3 Offset)
 	{
 		Vector3 vertexCentroid = new Vector3(0,0,0);
 			
 		GameObject tempParent = new GameObject("temp offset");
 		tempParent.transform.position = ParentCluster.GetComponent<BoxCollider>().center;	
-			
-		
+		//tempParent.transform.localScale = ParentCluster.GetComponent<BoxCollider>().size/2;	
 		
 		
 		foreach (Vector3 vertex in currentVerts)
 		{
-		Vector3 vertexmoved = tempParent.transform.TransformPoint(vertex);
-		vertexCentroid += vertexmoved;
+		//Vector3 vertexmoved = tempParent.transform.TransformPoint(vertex);
+		
+		//Vector3 vertexmoved = vertex + Offset; //tempParent.transform.position;	
 			
+		// we need to do sometype of scaling here, I think the iterate collider sides plane offset can be passed
+		// to the genlowpolymethod, and that method can pass it to the centroid calculation.
+		// may need to scale only in 1 or 2 dimensions depending on the side, I'm not sure it's about another offset	
+			
+		vertexCentroid += vertex;
+		
 		}
+		
+		
+		
+		
 			DestroyImmediate(tempParent);
 			vertexCentroid = (vertexCentroid/(float)currentVerts.Count);
+			
+			vertexCentroid += Offset;
+		
 			return vertexCentroid;
 	}
 	
-	public GameObject genLowPolyMesh (String colSide,int widthSegments,int lengthSegments,float width,float length,GameObject ParentCluster)
+	public GameObject genLowPolyMesh (String colSide,int widthSegments,int lengthSegments,float width,float length,GameObject ParentCluster,Vector3 Offset)
 	{
 		
 			
@@ -570,6 +597,7 @@ public void iterateColliderSides (GameObject wall)
 		// create a new list to hold current verts
 		
 		List<Vector3> currentVerts = new List<Vector3>();
+		currentVerts.Clear();
 		
 		if ((colSide == "Left") || (colSide == "Bottom") || (colSide == "Back"))
 		{ 	
@@ -582,7 +610,7 @@ public void iterateColliderSides (GameObject wall)
             {
                 for (int x = 0; x < widthSegments; x++)
                 {
-					
+					currentVerts.Clear();
  					triangles[index]   = ((y*4)     * (hCount2-1)) + x*4;
                     triangles[index-1] = ((y*4) * (hCount2-1))+2 + x*4;
                     triangles[index-2] = ((y*4)     * (hCount2-1)) + x*4 + 1;
@@ -604,9 +632,13 @@ public void iterateColliderSides (GameObject wall)
 					
 					
 					
+					
+					
+					
+					
 					//here we calculate the centroid of the quad and find the closest block
 					
-					Vector3 centroid = vertexCentroid(currentVerts,ParentCluster);
+					Vector3 centroid = vertexCentroid(currentVerts,ParentCluster,Offset);
 					
 					
 					
@@ -615,8 +647,26 @@ public void iterateColliderSides (GameObject wall)
 					GameObject closestGameObject = tile_children
 						.OrderBy(go => Vector3.Distance(go.transform.position, centroid))
 							.FirstOrDefault();
+						
+						
+					GameObject center = GameObject.FindGameObjectWithTag("Finish");
+					GameObject currentGO = (GameObject)Instantiate(center,centroid,Quaternion.identity);
+					currentGO.name =  closestGameObject.name + "centroid";
+					//currentGO.transform.parent = ParentCluster.transform;
 					
-						Debug.Log(closestGameObject);
+					
+					// debug to create the verts for each centroid and make them children
+//					foreach (Vector3 testCenter in currentVerts)
+//					{
+//					GameObject test2 = GameObject.FindGameObjectWithTag("Respawn");
+//					GameObject currentGO2 =(GameObject)Instantiate(test2,testCenter,Quaternion.identity);
+//					
+//					currentGO2.transform.parent = currentGO.transform;	
+//					}
+//					
+					
+					
+					
 					
 					// based on the closest object, we then lookup the correct rectangle inside the dictionary for the atlas,
 					// then we need to lookup the correct side based on the rotation of that gameobject, we can get it from the
@@ -670,7 +720,7 @@ public void iterateColliderSides (GameObject wall)
             {
                 for (int x = 0; x < widthSegments; x++)
                 {
-				
+					currentVerts.Clear();
                     triangles[index]   = ((y*4)     * (hCount2-1)) + x*4;
                     triangles[index+1] = ((y*4) * (hCount2-1))+2 + x*4;
                     triangles[index+2] = ((y*4)     * (hCount2-1)) + x*4 + 1;
@@ -693,7 +743,7 @@ public void iterateColliderSides (GameObject wall)
 					index += 6;
                 
 				
-					Vector3 centroid = vertexCentroid(currentVerts,ParentCluster);
+					Vector3 centroid = vertexCentroid(currentVerts,ParentCluster,Offset);
 					
 					
 					
@@ -701,7 +751,7 @@ public void iterateColliderSides (GameObject wall)
 						.OrderBy(go => Vector3.Distance(go.transform.position, centroid))
 							.FirstOrDefault();
 					
-					Debug.Log(closestGameObject);
+					Debug.Log("closest Obj is " +  closestGameObject);
 					
 				
 				}
