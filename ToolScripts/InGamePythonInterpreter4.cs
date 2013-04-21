@@ -25,7 +25,7 @@ public class InGamePythonInterpreter4 : MonoBehaviour
 	public Material  atlastMat;
 	public Texture2D majorTextureAtlas;
 	
-	
+
 	public GameObject generator;
 	public levelobject curlevel;
 	public int iterations = 10;
@@ -184,6 +184,8 @@ public void genMajorAtlas () {
 	
 		foreach(string filename in filePaths){
 	 		
+			if (filename != Application.dataPath + "/asset_textures/majorTexture.png")
+			{
 			Texture2D texture = new Texture2D(100,100);
 			
 			using (BinaryReader reader = new BinaryReader(File.Open(filename, FileMode.Open)))
@@ -191,7 +193,7 @@ public void genMajorAtlas () {
 			texture.LoadImage(reader.ReadBytes((int)reader.BaseStream.Length));
 			}	
 			textures.Add(texture);
-			
+			}
 			
 			
 		}
