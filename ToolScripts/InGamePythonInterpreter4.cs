@@ -179,7 +179,7 @@ public void genMajorAtlas () {
 	// we need to grab a list of textures from the preview folder	
 	List<Texture2D> textures = new List<Texture2D>(); 	
 	
-	// this can cause a problem where the atlas creates an atlas with itself.	
+	//this can cause a problem where the atlas creates an atlas with itself.	
 	string[] filePaths = Directory.GetFiles(Application.dataPath +"/asset_textures/", "*.png"); 	
 	
 		foreach(string filename in filePaths){
@@ -387,7 +387,7 @@ public void iterateColliderSides (GameObject wall)
 			
 			offset = collider.center - new Vector3(0,0, collider.size.z/2);
 			
-			plane = genLowPolyMesh("Front", widthSegments,lengthSegments,width,length,wallCluster.gameObject,offset);
+			plane = genLowPolyMesh("Back", widthSegments,lengthSegments,width,length,wallCluster.gameObject,offset);
 			plane.transform.position = collider.center - new Vector3(0,0, collider.size.z/2);
 			
 			
@@ -398,7 +398,7 @@ public void iterateColliderSides (GameObject wall)
 			
 			offset = collider.center + new Vector3(0,0, collider.size.z/2);
 			
-			plane = genLowPolyMesh("Back", widthSegments,lengthSegments,width,length,wallCluster.gameObject,offset);
+			plane = genLowPolyMesh("Front", widthSegments,lengthSegments,width,length,wallCluster.gameObject,offset);
 			plane.transform.position = collider.center + new Vector3(0,0, collider.size.z/2);
 			
 			
@@ -540,7 +540,7 @@ public void iterateColliderSides (GameObject wall)
 				
 				
 				
-                    else if (colSide == "Front")
+                    else if (colSide == "Back")
                     {
                         vertices[index] = new Vector3(x*scaleX - width/2f, y*scaleY - length/2f, 0.0f);
                     	vertices[index+1] = new Vector3((x+1)*scaleX - width/2f, y*scaleY - length/2f, 0.0f);
@@ -548,7 +548,7 @@ public void iterateColliderSides (GameObject wall)
 						vertices[index+3] = new Vector3((x+1)*scaleX - width/2f, (y+1)*scaleY - length/2f, 0.0f);
 				
 					}
-					else if (colSide == "Back")
+					else if (colSide == "Front")
                     {
                         vertices[(numVertices-1)-index] = new Vector3(x*scaleX - width/2f, y*scaleY - length/2f, 0.0f);
                     	vertices[(numVertices-1)-(index+1)] = new Vector3((x+1)*scaleX - width/2f, y*scaleY - length/2f, 0.0f);
@@ -601,7 +601,7 @@ public void iterateColliderSides (GameObject wall)
 		List<Vector3> currentVerts = new List<Vector3>();
 		currentVerts.Clear();
 		
-		if ((colSide == "Left") || (colSide == "Bottom") || (colSide == "Back"))
+		if ((colSide == "Left") || (colSide == "Bottom") || (colSide == "Front"))
 		{ 	
 			
 			
@@ -649,24 +649,6 @@ public void iterateColliderSides (GameObject wall)
 					GameObject closestGameObject = tile_children
 						.OrderBy(go => Vector3.Distance(go.transform.position, centroid))
 							.FirstOrDefault();
-						
-						
-					GameObject center = GameObject.FindGameObjectWithTag("Finish");
-					GameObject currentGO = (GameObject)Instantiate(center,centroid,Quaternion.identity);
-					currentGO.name =  closestGameObject.name + "centroid";
-					//currentGO.transform.parent = ParentCluster.transform;
-					
-					
-					// debug to create the verts for each centroid and make them children
-//					foreach (Vector3 testCenter in currentVerts)
-//					{
-//					GameObject test2 = GameObject.FindGameObjectWithTag("Respawn");
-//					GameObject currentGO2 =(GameObject)Instantiate(test2,testCenter,Quaternion.identity);
-//					
-//					currentGO2.transform.parent = currentGO.transform;	
-//					}
-//					
-					
 					
 					
 					
@@ -685,14 +667,28 @@ public void iterateColliderSides (GameObject wall)
 					Rect currentRect = atlasDict[name + ".png"];
 					// now get the specific side of a certain tile, im just getting the first rectangle here for testing
 					// OH OH, we need to combine these rectangles together somehow haha!!!!
-					
-					Rect subRect = closestGameObject.GetComponent<genFlatTexTile>().atlasUvs[0];
-					
+
+					string cubeside = colSide.ToLower();
+					Rect subRect = closestGameObject.GetComponent<genFlatTexTile>().faceDictionary[cubeside];
+
+					//Rect subRect = closestGameObject.GetComponent<genFlatTexTile>().atlasUvs[2];
+
+
+
+
+					foreach ( String key in (closestGameObject.GetComponent<genFlatTexTile>().faceDictionary.Keys))
+					{
+						Debug.Log("AHHHH KEEEYS");
+						Debug.Log(key);
+
+					}
+
+
 					Debug.Log(((texResolution*3))/majorTextureAtlas.width);
 					Debug.Log(texResolution);
 					Debug.Log(majorTextureAtlas.width);
 					
-					float texScalex = (float)(texResolution*3)/(float)majorTextureAtlas.width;
+					float texScalex = (float)(texResolution*4)/(float)majorTextureAtlas.width;
 					float texScaley  =(float)(texResolution*2)/(float)majorTextureAtlas.height;
 					
 					
@@ -997,12 +993,6 @@ public void SortXYZ (GameObject roomcenter,string wallside)
 		
 		
 		}
-		 
-  
-		
-	
-	
-	//List<Order> SortedList = objListOrder.OrderBy(o=>o.OrderDate).ToList();
 	
 	
 	}
@@ -1478,6 +1468,17 @@ foreach (Transform cluster in roomcenter.transform.FindChild(wallside).transform
 				
 				}
 				
+				// fill the location information on each tile 
+
+					foreach (GameObject tile in tiles)
+						{	
+						// we ignore the roomcomponents that are in the tiles list, since these are not really tiles and have no gentiletex parameter
+					if (tile.transform.parent != null) 
+			{
+					tile.GetComponent<genFlatTexTile>().updateDicts();
+			}		
+						}
+
 				// now generate the atlas
 					
 				genMajorAtlas();

@@ -20,6 +20,433 @@ public class genFlatTexTile : MonoBehaviour {
 	public Dictionary<string, float> rotationDictionary = new Dictionary<string, float>();
 		
 		
+
+	public void updateDicts()
+	{
+
+		faceDictionary.Clear();
+		rotationDictionary.Clear();
+		
+		// we may want to make this conditional upon the current rotation, so if we are rotated a certain way then we add 
+		// the top face to whatever is actually on top, we can also just do this at the time we get the textures
+		Debug.Log("ADDING STUFF TO FACEDICTIONARY");
+
+		int right = 0;
+		int left = 1;
+		int top = 2;
+		int bottom = 3;
+		int front = 4;
+		int back = 5;
+
+		int xRotFactor = Mathf.RoundToInt( this.gameObject.transform.eulerAngles.x);
+		int yRotFactor = Mathf.RoundToInt( this.gameObject.transform.eulerAngles.y);
+		int zRotFactor = Mathf.RoundToInt( this.gameObject.transform.eulerAngles.z);
+		
+		
+				if (xRotFactor < 0)
+				{
+					xRotFactor += 360;
+				}
+		
+		
+				if (yRotFactor < 0)
+				{
+					yRotFactor += 360;
+				}
+		
+		
+				if (zRotFactor < 0)
+				{
+					zRotFactor += 360;
+				}
+
+
+		Debug.Log(xRotFactor);
+		Debug.Log(yRotFactor);
+		Debug.Log (zRotFactor);
+
+
+
+
+
+		if (this.gameObject.transform.forward == Vector3.down)
+		{
+
+
+			faceDictionary.Add("top",atlasUvs[back]);	
+			faceDictionary.Add("bottom",atlasUvs[front]);
+
+
+			if (yRotFactor == 90)
+			     {
+
+				faceDictionary.Add("right",atlasUvs[top]);
+				faceDictionary.Add("left",atlasUvs[bottom]);	
+
+				faceDictionary.Add("back",atlasUvs[right]);
+				faceDictionary.Add("front",atlasUvs[left]);
+
+
+				}
+	
+			else if (yRotFactor == 180)
+			{
+				
+				faceDictionary.Add("right",atlasUvs[left]);
+				faceDictionary.Add("left",atlasUvs[right]);	
+				
+				faceDictionary.Add("back",atlasUvs[bottom]);
+				faceDictionary.Add("front",atlasUvs[top]);
+				
+				
+			}
+		
+			else if (yRotFactor == 270)
+			{
+				
+				faceDictionary.Add("right",atlasUvs[bottom]);
+				faceDictionary.Add("left",atlasUvs[top]);	
+				
+				faceDictionary.Add("back",atlasUvs[left]);
+				faceDictionary.Add("front",atlasUvs[right]);
+				
+				
+			}
+
+			else if (yRotFactor == 0)
+			{
+				
+				faceDictionary.Add("right",atlasUvs[right]);
+				faceDictionary.Add("left",atlasUvs[left]);	
+				
+				faceDictionary.Add("back",atlasUvs[bottom]);
+				faceDictionary.Add("front",atlasUvs[top]);
+				
+				
+			}
+
+		
+		
+		
+		
+		
+		}
+
+		if (this.gameObject.transform.forward == Vector3.up)
+		{
+			
+			
+			faceDictionary.Add("top",atlasUvs[front]);	
+			faceDictionary.Add("bottom",atlasUvs[back]);
+			
+			
+			if (yRotFactor == 90)
+			{
+				
+				faceDictionary.Add("right",atlasUvs[bottom]);
+				faceDictionary.Add("left",atlasUvs[top]);	
+				
+				faceDictionary.Add("back",atlasUvs[left]);
+				faceDictionary.Add("front",atlasUvs[right]);
+				
+				
+			}
+			
+			else if (yRotFactor == 180)
+			{
+				
+				faceDictionary.Add("right",atlasUvs[right]);
+				faceDictionary.Add("left",atlasUvs[left]);	
+				
+				faceDictionary.Add("back",atlasUvs[top]);
+				faceDictionary.Add("front",atlasUvs[bottom]);
+				
+				
+			}
+			
+			else if (yRotFactor == 270)
+			{
+				
+				faceDictionary.Add("right",atlasUvs[top]);
+				faceDictionary.Add("left",atlasUvs[bottom]);	
+				
+				faceDictionary.Add("back",atlasUvs[right]);
+				faceDictionary.Add("front",atlasUvs[left]);
+				
+				
+			}
+			
+			else if (yRotFactor == 0)
+			{
+				
+				faceDictionary.Add("right",atlasUvs[right]);
+				faceDictionary.Add("left",atlasUvs[left]);	
+				
+				faceDictionary.Add("back",atlasUvs[top]);
+				faceDictionary.Add("front",atlasUvs[bottom]);
+				
+				
+			}
+
+		}
+
+
+
+			if (this.gameObject.transform.forward == Vector3.forward)
+			{
+				
+				faceDictionary.Add("back",atlasUvs[back]);
+				faceDictionary.Add("front",atlasUvs[front]);
+
+				
+
+
+				if (zRotFactor == 90)
+				{
+					
+					faceDictionary.Add("right",atlasUvs[bottom]);
+					faceDictionary.Add("left",atlasUvs[top]);	
+					
+					faceDictionary.Add("top",atlasUvs[right]);	
+					faceDictionary.Add("bottom",atlasUvs[left]);
+					
+					
+				}
+				
+				else if (zRotFactor == 180)
+				{
+					
+					faceDictionary.Add("right",atlasUvs[right]);
+					faceDictionary.Add("left",atlasUvs[left]);	
+					
+					faceDictionary.Add("top",atlasUvs[top]);	
+					faceDictionary.Add("bottom",atlasUvs[bottom]);
+					
+					
+				}
+				
+				else if (zRotFactor == 270)
+				{
+					
+					faceDictionary.Add("right",atlasUvs[top]);
+					faceDictionary.Add("left",atlasUvs[bottom]);	
+					
+					faceDictionary.Add("top",atlasUvs[left]);	
+					faceDictionary.Add("bottom",atlasUvs[right]);
+					
+					
+				}
+				
+				else if (zRotFactor == 0)
+				{
+					
+					faceDictionary.Add("right",atlasUvs[right]);
+					faceDictionary.Add("left",atlasUvs[left]);	
+					
+					faceDictionary.Add("top",atlasUvs[top]);	
+					faceDictionary.Add("bottom",atlasUvs[bottom]);
+					
+					
+				}
+				
+			}
+
+
+			if (this.gameObject.transform.forward == Vector3.back)
+			{
+				
+				faceDictionary.Add("back",atlasUvs[front]);
+				faceDictionary.Add("front",atlasUvs[back]);
+				
+				
+				
+				
+				if (zRotFactor == 90)
+				{
+					
+					faceDictionary.Add("right",atlasUvs[top]);
+					faceDictionary.Add("left",atlasUvs[bottom]);	
+					
+					faceDictionary.Add("top",atlasUvs[right]);	
+					faceDictionary.Add("bottom",atlasUvs[left]);
+					
+					
+				}
+				
+				else if (zRotFactor == 180)
+				{
+					
+					faceDictionary.Add("right",atlasUvs[right]);
+					faceDictionary.Add("left",atlasUvs[left]);	
+					
+					faceDictionary.Add("top",atlasUvs[bottom]);	
+					faceDictionary.Add("bottom",atlasUvs[top]);
+					
+					
+				}
+				
+				else if (zRotFactor == 270)
+				{
+					
+					faceDictionary.Add("right",atlasUvs[bottom]);
+					faceDictionary.Add("left",atlasUvs[top]);	
+					
+					faceDictionary.Add("top",atlasUvs[left]);	
+					faceDictionary.Add("bottom",atlasUvs[right]);
+					
+					
+				}
+				
+				else if (zRotFactor == 0)
+				{
+					
+					faceDictionary.Add("right",atlasUvs[left]);
+					faceDictionary.Add("left",atlasUvs[right]);	
+					
+					faceDictionary.Add("top",atlasUvs[top]);	
+					faceDictionary.Add("bottom",atlasUvs[bottom]);
+					
+					
+				}
+				
+			}
+
+
+
+			if (this.gameObject.transform.forward == Vector3.right)
+			{
+				
+				faceDictionary.Add("right",atlasUvs[front]);
+				faceDictionary.Add("left",atlasUvs[back]);
+				
+				
+				
+				
+				if (xRotFactor == 90)
+				{
+					
+					faceDictionary.Add("front",atlasUvs[top]);
+					faceDictionary.Add("back",atlasUvs[bottom]);	
+					
+					faceDictionary.Add("top",atlasUvs[right]);	
+					faceDictionary.Add("bottom",atlasUvs[left]);
+					
+					
+				}
+				
+				else if (xRotFactor == 180)
+				{
+					
+					faceDictionary.Add("front",atlasUvs[right]);
+					faceDictionary.Add("back",atlasUvs[left]);
+					
+					faceDictionary.Add("top",atlasUvs[bottom]);	
+					faceDictionary.Add("bottom",atlasUvs[top]);
+					
+					
+				}
+				
+				else if (xRotFactor == 270)
+				{
+					
+					faceDictionary.Add("front",atlasUvs[bottom]);
+					faceDictionary.Add("back",atlasUvs[top]);
+					
+					faceDictionary.Add("top",atlasUvs[left]);	
+					faceDictionary.Add("bottom",atlasUvs[right]);
+					
+					
+				}
+				
+				else if (xRotFactor == 0)
+				{
+					
+					faceDictionary.Add("front",atlasUvs[left]);
+					faceDictionary.Add("back",atlasUvs[right]);
+					
+					faceDictionary.Add("top",atlasUvs[top]);	
+					faceDictionary.Add("bottom",atlasUvs[bottom]);
+					
+					
+				}
+				
+			}
+
+
+			if (this.gameObject.transform.forward == Vector3.left)
+			{
+				
+				faceDictionary.Add("right",atlasUvs[back]);
+				faceDictionary.Add("left",atlasUvs[front]);
+				
+				
+				
+				
+				if (xRotFactor == 90)
+				{
+					
+					faceDictionary.Add("front",atlasUvs[bottom]);
+					faceDictionary.Add("back",atlasUvs[top]);	
+					
+					faceDictionary.Add("top",atlasUvs[right]);	
+					faceDictionary.Add("bottom",atlasUvs[left]);
+					
+					
+				}
+				
+				else if (xRotFactor == 180)
+				{
+					
+					faceDictionary.Add("front",atlasUvs[right]);
+					faceDictionary.Add("back",atlasUvs[left]);
+					
+					faceDictionary.Add("top",atlasUvs[top]);	
+					faceDictionary.Add("bottom",atlasUvs[bottom]);
+					
+					
+				}
+				
+				else if (xRotFactor == 270)
+				{
+					
+					faceDictionary.Add("front",atlasUvs[top]);
+					faceDictionary.Add("back",atlasUvs[bottom]);
+					
+					faceDictionary.Add("top",atlasUvs[left]);	
+					faceDictionary.Add("bottom",atlasUvs[right]);
+					
+					
+				}
+				
+				else if (xRotFactor == 0)
+				{
+					
+					faceDictionary.Add("front",atlasUvs[right]);
+					faceDictionary.Add("back",atlasUvs[left]);
+					
+					faceDictionary.Add("top",atlasUvs[top]);	
+					faceDictionary.Add("bottom",atlasUvs[bottom]);
+					
+					
+				}
+				
+			}
+
+
+
+		
+		
+		rotationDictionary.Add("right",this.gameObject.transform.localEulerAngles.x);
+		rotationDictionary.Add("left",this.gameObject.transform.localEulerAngles.x);
+		rotationDictionary.Add("top",this.gameObject.transform.localEulerAngles.y);
+		rotationDictionary.Add("bottom",this.gameObject.transform.localEulerAngles.y);
+		rotationDictionary.Add("back",this.gameObject.transform.localEulerAngles.z);
+		rotationDictionary.Add("front",this.gameObject.transform.localEulerAngles.z);
+
+
+
+	}
+
 	
 	public void Createpreviewfolder()
 	{
@@ -363,26 +790,26 @@ public class genFlatTexTile : MonoBehaviour {
 		
 		//at this point the atlas should be set full of rectangles and the textures all generated.  The Tile was instantiated long ago.
 		
-		faceDictionary.Clear();
-		rotationDictionary.Clear();
-		
-		// we may want to make this conditional upon the current rotation, so if we are rotated a certain way then we add 
-		// the top face to whatever is actually on top, we can also just do this at the time we get the textures
-		Debug.Log("ADDING STUFF TO FACEDICTIONARY");
-		
-		faceDictionary.Add("right",atlasUvs[0]);
-		faceDictionary.Add("left",atlasUvs[1]);	
-		faceDictionary.Add("top",atlasUvs[2]);	
-		faceDictionary.Add("bottom",atlasUvs[3]);
-		faceDictionary.Add("back",atlasUvs[4]);
-		faceDictionary.Add("front",atlasUvs[5]);
-		
-		rotationDictionary.Add("right",this.gameObject.transform.localEulerAngles.x);
-		rotationDictionary.Add("left",this.gameObject.transform.localEulerAngles.x);
-		rotationDictionary.Add("top",this.gameObject.transform.localEulerAngles.y);
-		rotationDictionary.Add("bottom",this.gameObject.transform.localEulerAngles.y);
-		rotationDictionary.Add("back",this.gameObject.transform.localEulerAngles.z);
-		rotationDictionary.Add("front",this.gameObject.transform.localEulerAngles.z);
+//		faceDictionary.Clear();
+//		rotationDictionary.Clear();
+//		
+//		// we may want to make this conditional upon the current rotation, so if we are rotated a certain way then we add 
+//		// the top face to whatever is actually on top, we can also just do this at the time we get the textures
+//		Debug.Log("ADDING STUFF TO FACEDICTIONARY");
+//		
+//		faceDictionary.Add("right",atlasUvs[0]);
+//		faceDictionary.Add("left",atlasUvs[1]);	
+//		faceDictionary.Add("top",atlasUvs[2]);	
+//		faceDictionary.Add("bottom",atlasUvs[3]);
+//		faceDictionary.Add("back",atlasUvs[4]);
+//		faceDictionary.Add("front",atlasUvs[5]);
+//		
+//		rotationDictionary.Add("right",this.gameObject.transform.localEulerAngles.x);
+//		rotationDictionary.Add("left",this.gameObject.transform.localEulerAngles.x);
+//		rotationDictionary.Add("top",this.gameObject.transform.localEulerAngles.y);
+//		rotationDictionary.Add("bottom",this.gameObject.transform.localEulerAngles.y);
+//		rotationDictionary.Add("back",this.gameObject.transform.localEulerAngles.z);
+//		rotationDictionary.Add("front",this.gameObject.transform.localEulerAngles.z);
 		
 		//lets ignore rotation for now BUT instead of this orientation dictionary, we can just alter the uvs rectangles of the 
 		// specific face based on the rotation and store that altered uv in the facedictionary, that way later we'll just get the correct
