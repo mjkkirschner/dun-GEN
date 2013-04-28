@@ -31,6 +31,8 @@ public class genFlatTexTile : MonoBehaviour {
 		// the top face to whatever is actually on top, we can also just do this at the time we get the textures
 		Debug.Log("ADDING STUFF TO FACEDICTIONARY");
 
+		// this ordering has checked out.
+
 		int right = 0;
 		int left = 1;
 		int top = 2;
@@ -77,7 +79,7 @@ public class genFlatTexTile : MonoBehaviour {
 			faceDictionary.Add("bottom",atlasUvs[front]);
 
 
-			if (yRotFactor == 90)
+			if (this.gameObject.transform.right == Vector3.back)
 			     {
 
 				faceDictionary.Add("right",atlasUvs[top]);
@@ -89,19 +91,19 @@ public class genFlatTexTile : MonoBehaviour {
 
 				}
 	
-			else if (yRotFactor == 180)
+			else if (this.gameObject.transform.right == Vector3.left)
 			{
 				
 				faceDictionary.Add("right",atlasUvs[left]);
 				faceDictionary.Add("left",atlasUvs[right]);	
 				
-				faceDictionary.Add("back",atlasUvs[bottom]);
-				faceDictionary.Add("front",atlasUvs[top]);
+				faceDictionary.Add("back",atlasUvs[top]);
+				faceDictionary.Add("front",atlasUvs[bottom]);
 				
 				
 			}
 		
-			else if (yRotFactor == 270)
+			else if (this.gameObject.transform.right == Vector3.forward)
 			{
 				
 				faceDictionary.Add("right",atlasUvs[bottom]);
@@ -113,7 +115,7 @@ public class genFlatTexTile : MonoBehaviour {
 				
 			}
 
-			else if (yRotFactor == 0)
+			else if (this.gameObject.transform.right == Vector3.right)
 			{
 				
 				faceDictionary.Add("right",atlasUvs[right]);
@@ -140,35 +142,11 @@ public class genFlatTexTile : MonoBehaviour {
 			faceDictionary.Add("bottom",atlasUvs[back]);
 			
 			
-			if (yRotFactor == 90)
+			if (this.gameObject.transform.right == Vector3.back)
 			{
 				
 				faceDictionary.Add("right",atlasUvs[bottom]);
 				faceDictionary.Add("left",atlasUvs[top]);	
-				
-				faceDictionary.Add("back",atlasUvs[left]);
-				faceDictionary.Add("front",atlasUvs[right]);
-				
-				
-			}
-			
-			else if (yRotFactor == 180)
-			{
-				
-				faceDictionary.Add("right",atlasUvs[right]);
-				faceDictionary.Add("left",atlasUvs[left]);	
-				
-				faceDictionary.Add("back",atlasUvs[top]);
-				faceDictionary.Add("front",atlasUvs[bottom]);
-				
-				
-			}
-			
-			else if (yRotFactor == 270)
-			{
-				
-				faceDictionary.Add("right",atlasUvs[top]);
-				faceDictionary.Add("left",atlasUvs[bottom]);	
 				
 				faceDictionary.Add("back",atlasUvs[right]);
 				faceDictionary.Add("front",atlasUvs[left]);
@@ -176,7 +154,31 @@ public class genFlatTexTile : MonoBehaviour {
 				
 			}
 			
-			else if (yRotFactor == 0)
+			else if (this.gameObject.transform.right == Vector3.left)
+			{
+				
+				faceDictionary.Add("right",atlasUvs[right]);
+				faceDictionary.Add("left",atlasUvs[left]);	
+				
+				faceDictionary.Add("back",atlasUvs[bottom]);
+				faceDictionary.Add("front",atlasUvs[top]);
+				
+				
+			}
+			
+			else if (this.gameObject.transform.right == Vector3.forward)
+			{
+				
+				faceDictionary.Add("right",atlasUvs[top]);
+				faceDictionary.Add("left",atlasUvs[bottom]);	
+				
+				faceDictionary.Add("back",atlasUvs[left]);
+				faceDictionary.Add("front",atlasUvs[right]);
+				
+				
+			}
+			
+			else if (this.gameObject.transform.right == Vector3.right)
 			{
 				
 				faceDictionary.Add("right",atlasUvs[right]);
@@ -201,7 +203,7 @@ public class genFlatTexTile : MonoBehaviour {
 				
 
 
-				if (zRotFactor == 90)
+				if (this.gameObject.transform.up == Vector3.left)
 				{
 					
 					faceDictionary.Add("right",atlasUvs[bottom]);
@@ -213,19 +215,19 @@ public class genFlatTexTile : MonoBehaviour {
 					
 				}
 				
-				else if (zRotFactor == 180)
+			else if (this.gameObject.transform.up == Vector3.down)
 				{
 					
-					faceDictionary.Add("right",atlasUvs[right]);
-					faceDictionary.Add("left",atlasUvs[left]);	
+					faceDictionary.Add("right",atlasUvs[left]);
+					faceDictionary.Add("left",atlasUvs[right]);	
 					
-					faceDictionary.Add("top",atlasUvs[top]);	
-					faceDictionary.Add("bottom",atlasUvs[bottom]);
+					faceDictionary.Add("top",atlasUvs[bottom]);	
+					faceDictionary.Add("bottom",atlasUvs[top]);
 					
 					
 				}
 				
-				else if (zRotFactor == 270)
+			else if (this.gameObject.transform.up == Vector3.right)
 				{
 					
 					faceDictionary.Add("right",atlasUvs[top]);
@@ -237,7 +239,7 @@ public class genFlatTexTile : MonoBehaviour {
 					
 				}
 				
-				else if (zRotFactor == 0)
+			else if (this.gameObject.transform.up == Vector3.up)
 				{
 					
 					faceDictionary.Add("right",atlasUvs[right]);
@@ -261,7 +263,7 @@ public class genFlatTexTile : MonoBehaviour {
 				
 				
 				
-				if (zRotFactor == 90)
+			if (this.gameObject.transform.up == Vector3.right)
 				{
 					
 					faceDictionary.Add("right",atlasUvs[top]);
@@ -273,7 +275,7 @@ public class genFlatTexTile : MonoBehaviour {
 					
 				}
 				
-				else if (zRotFactor == 180)
+			else if (this.gameObject.transform.up == Vector3.down)
 				{
 					
 					faceDictionary.Add("right",atlasUvs[right]);
@@ -285,7 +287,7 @@ public class genFlatTexTile : MonoBehaviour {
 					
 				}
 				
-				else if (zRotFactor == 270)
+			else if (this.gameObject.transform.up == Vector3.left)
 				{
 					
 					faceDictionary.Add("right",atlasUvs[bottom]);
@@ -297,7 +299,7 @@ public class genFlatTexTile : MonoBehaviour {
 					
 				}
 				
-				else if (zRotFactor == 0)
+			else if (this.gameObject.transform.up == Vector3.up)
 				{
 					
 					faceDictionary.Add("right",atlasUvs[left]);
@@ -319,10 +321,10 @@ public class genFlatTexTile : MonoBehaviour {
 				faceDictionary.Add("right",atlasUvs[front]);
 				faceDictionary.Add("left",atlasUvs[back]);
 				
+				Debug.Log(xRotFactor);
+				Debug.Log(this.gameObject.transform.localEulerAngles);
 				
-				
-				
-				if (xRotFactor == 90)
+			if (this.gameObject.transform.up == Vector3.forward && this.gameObject.transform.right == Vector3.up)
 				{
 					
 					faceDictionary.Add("front",atlasUvs[top]);
@@ -334,7 +336,7 @@ public class genFlatTexTile : MonoBehaviour {
 					
 				}
 				
-				else if (xRotFactor == 180)
+			else if (this.gameObject.transform.up == Vector3.down && this.gameObject.transform.right == Vector3.forward)
 				{
 					
 					faceDictionary.Add("front",atlasUvs[right]);
@@ -346,7 +348,7 @@ public class genFlatTexTile : MonoBehaviour {
 					
 				}
 				
-				else if (xRotFactor == 270)
+			else if (this.gameObject.transform.up == Vector3.back && this.gameObject.transform.right == Vector3.down)
 				{
 					
 					faceDictionary.Add("front",atlasUvs[bottom]);
@@ -358,7 +360,7 @@ public class genFlatTexTile : MonoBehaviour {
 					
 				}
 				
-				else if (xRotFactor == 0)
+			else if (this.gameObject.transform.up == Vector3.up && this.gameObject.transform.right == Vector3.back)
 				{
 					
 					faceDictionary.Add("front",atlasUvs[left]);
@@ -382,7 +384,7 @@ public class genFlatTexTile : MonoBehaviour {
 				
 				
 				
-				if (xRotFactor == 90)
+			if (this.gameObject.transform.up == Vector3.back && this.gameObject.transform.right == Vector3.up)
 				{
 					
 					faceDictionary.Add("front",atlasUvs[bottom]);
@@ -394,11 +396,11 @@ public class genFlatTexTile : MonoBehaviour {
 					
 				}
 				
-				else if (xRotFactor == 180)
+			else if (this.gameObject.transform.up == Vector3.down && this.gameObject.transform.right == Vector3.back)
 				{
 					
-					faceDictionary.Add("front",atlasUvs[right]);
-					faceDictionary.Add("back",atlasUvs[left]);
+					faceDictionary.Add("front",atlasUvs[left]);
+					faceDictionary.Add("back",atlasUvs[right]);
 					
 					faceDictionary.Add("top",atlasUvs[top]);	
 					faceDictionary.Add("bottom",atlasUvs[bottom]);
@@ -406,7 +408,7 @@ public class genFlatTexTile : MonoBehaviour {
 					
 				}
 				
-				else if (xRotFactor == 270)
+			else if (this.gameObject.transform.up == Vector3.forward && this.gameObject.transform.right == Vector3.down)
 				{
 					
 					faceDictionary.Add("front",atlasUvs[top]);
@@ -418,7 +420,7 @@ public class genFlatTexTile : MonoBehaviour {
 					
 				}
 				
-				else if (xRotFactor == 0)
+			else if (this.gameObject.transform.up == Vector3.up && this.gameObject.transform.right == Vector3.forward)
 				{
 					
 					faceDictionary.Add("front",atlasUvs[right]);
